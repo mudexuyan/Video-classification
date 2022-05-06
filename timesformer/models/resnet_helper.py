@@ -12,7 +12,7 @@ from torch import einsum
 from einops import rearrange, reduce, repeat
 import torch.nn.functional as F
 from torch.nn.modules.module import Module
-from torch.nn.modules.linear import _LinearWithBias
+from torch.nn.modules.linear import NonDynamicallyQuantizableLinear
 from torch.nn.modules.activation import MultiheadAttention
 
 import numpy as np

@@ -7,6 +7,7 @@ from timesformer.utils.parser import load_config, parse_args
 from tools.test_net import test
 from tools.train_net import train
 
+from timesformer.visualization.tensorboard_vis import TensorboardWriter as visualize
 
 def get_func(cfg):
     train_func = train

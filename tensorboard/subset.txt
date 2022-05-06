@@ -1,0 +1,10 @@
+straight
+left
+right
+shift
+press
+drink
+faint
+bow'
+phone
+talk
