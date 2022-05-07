@@ -228,3 +228,11 @@
          'DIM_C5': 2048,
          'SCALE_RES2': False,
          'WIDTH_FACTOR': 1.0}}
+[05/07 15:31:04][INFO] checkpoint.py: 549: Load from last checkpoint, result/train/checkpoints/checkpoint_epoch_00010.pyth.
+[05/07 15:31:04][INFO] checkpoint.py: 221: Loading network weights from result/train/checkpoints/checkpoint_epoch_00010.pyth.
+[05/07 15:31:40][INFO] kinetics.py:  71: Constructing Kinetics train...
+[05/07 15:31:40][INFO] kinetics.py: 111: Constructing kinetics dataloader (size: 1471) from ../DataSet/train.csv
+[05/07 15:31:40][INFO] kinetics.py:  71: Constructing Kinetics val...
+[05/07 15:31:40][INFO] kinetics.py: 111: Constructing kinetics dataloader (size: 374) from ../DataSet/val.csv
+[05/07 15:31:40][INFO] tensorboard_vis.py:  56: To see logged results in Tensorboard, please launch using the command             `tensorboard  --port=<port-number> --logdir result/train/tensorboard/log`
+[05/07 15:31:40][INFO] train_net.py: 446: Start epoch: 11

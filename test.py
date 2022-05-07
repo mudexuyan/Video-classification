@@ -14,7 +14,8 @@ from timesformer.models.vit import TimeSformer
 
 # print(torch.cuda.is_available())
 
-import pickle
-with open('result/test/pred_label.txt', 'rb') as f:
-    data = pickle.load(f)
-print(data) # {'a': [1, 2, 3], 'b': [4, 5, 6], 'c': [7, 8, 9]}
+# 预测结果
+# import pickle
+# with open('result/test/pred_label.txt', 'rb') as f:
+#     data = pickle.load(f)
+# print(data) 
