@@ -5,6 +5,6 @@ shift
 press
 drink
 faint
-bow'
+bow
 phone
 talk

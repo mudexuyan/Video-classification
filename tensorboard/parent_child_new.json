@@ -1,0 +1,25 @@
+
+{
+    "normal": [
+        "left",
+        "right",
+        "shift",
+        "straight",
+        "press"
+    ],
+    "drink": [
+        "drink"
+    ],
+    "faint": [
+        "faint"
+    ],
+    "bow": [
+        "bow"
+    ],
+    "phone": [
+        "phone"
+    ],
+    "talk": [
+        "talk"
+    ]
+}
