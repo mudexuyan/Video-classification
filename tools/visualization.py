@@ -6,21 +6,36 @@ import torch
 import tqdm
 from fvcore.common.file_io import PathManager
 
-import slowfast.datasets.utils as data_utils
-import slowfast.utils.checkpoint as cu
-import slowfast.utils.distributed as du
-import slowfast.utils.logging as logging
-import slowfast.utils.misc as misc
-import slowfast.visualization.tensorboard_vis as tb
-from slowfast.datasets import loader
-from slowfast.models import build_model
-from slowfast.visualization.gradcam_utils import GradCAM
-from slowfast.visualization.prediction_vis import WrongPredictionVis
-from slowfast.visualization.utils import (
+# import slowfast.datasets.utils as data_utils
+# import slowfast.utils.checkpoint as cu
+# import slowfast.utils.distributed as du
+# import slowfast.utils.logging as logging
+# import slowfast.utils.misc as misc
+# import slowfast.visualization.tensorboard_vis as tb
+# from slowfast.datasets import loader
+# from slowfast.models import build_model
+# from slowfast.visualization.gradcam_utils import GradCAM
+# from slowfast.visualization.prediction_vis import WrongPredictionVis
+# from slowfast.visualization.utils import (
+#     GetWeightAndActivation,
+#     process_layer_index_data,
+# )
+# from slowfast.visualization.video_visualizer import VideoVisualizer
+import timesformer.datasets.utils as data_utils
+import timesformer.utils.checkpoint as cu
+import timesformer.utils.distributed as du
+import timesformer.utils.logging as logging
+import timesformer.utils.misc as misc
+import timesformer.visualization.tensorboard_vis as tb
+from timesformer.datasets import loader
+from timesformer.models import build_model
+from timesformer.visualization.gradcam_utils import GradCAM
+from timesformer.visualization.prediction_vis import WrongPredictionVis
+from timesformer.visualization.utils import (
     GetWeightAndActivation,
     process_layer_index_data,
 )
-from slowfast.visualization.video_visualizer import VideoVisualizer
+from timesformer.visualization.video_visualizer import VideoVisualizer
 
 logger = logging.get_logger(__name__)
 
