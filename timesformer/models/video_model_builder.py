@@ -395,7 +395,8 @@ class SlowFast(nn.Module):
                 dropout_rate=cfg.MODEL.DROPOUT_RATE,
                 act_func=cfg.MODEL.HEAD_ACT,
             )
-            self.head_name = "head{}".format(cfg.TASK)
+            # self.head_name = "head{}".format(cfg.TASK)
+            self.head_name = "head{}".format("classification")
             self.add_module(self.head_name, head)
 
     def forward(self, x, bboxes=None):
@@ -599,7 +600,8 @@ class ResNet(nn.Module):
                 dropout_rate=cfg.MODEL.DROPOUT_RATE,
                 act_func=cfg.MODEL.HEAD_ACT,
             )
-            self.head_name = "head{}".format(cfg.TASK)
+            # self.head_name = "head{}".format(cfg.TASK)
+            self.head_name = "head{}".format("classification")
             self.add_module(self.head_name, head)
 
     def forward(self, x, bboxes=None):

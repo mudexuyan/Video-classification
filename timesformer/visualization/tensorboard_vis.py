@@ -268,6 +268,7 @@ def add_confusion_matrix(
 
         print(subset_ids)
         print(sub_names)
+        print(class_names)
 
         sub_cmtx = vis_utils.plot_confusion_matrix(
             sub_cmtx,

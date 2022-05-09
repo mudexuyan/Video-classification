@@ -49,6 +49,10 @@ with open('result/test/pred_label.txt', 'rb') as f:
 print(data) 
 
 
+divided_space_time  121266442
+joint_space_time  85812490
+space_only  85806346
+
 
 ('model.blocks.11', Block(
   (norm1): LayerNorm((768,), eps=1e-06, elementwise_affine=True)
@@ -112,13 +116,3 @@ print(data)
 ('model.blocks.11.mlp.drop', Dropout(p=0.0, inplace=False))
 
 
-"straight"
-"left"
-"right"
-"shift"
-"press"
-"drink"
-"faint"
-"bow"
-"phone"
-"talk"

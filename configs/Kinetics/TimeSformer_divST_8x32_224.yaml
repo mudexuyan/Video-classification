@@ -25,7 +25,7 @@ SOLVER:
   WEIGHT_DECAY: 1e-4
   OPTIMIZING_METHOD: sgd
 MODEL:
-  MODEL_NAME: vit_base_patch16_224s
+  MODEL_NAME: vit_base_patch16_224
   NUM_CLASSES: 10
   ARCH: vit
   LOSS_FUNC: cross_entropy
@@ -37,7 +37,7 @@ TEST:
   NUM_ENSEMBLE_VIEWS: 1
   NUM_SPATIAL_CROPS: 3
 DATA_LOADER:
-  NUM_WORKERS: 1
+  NUM_WORKERS: 2
   PIN_MEMORY: True
 NUM_GPUS: 2
 NUM_SHARDS: 1
@@ -52,14 +52,14 @@ TENSORBOARD:
   CATEGORIES_PATH: tensorboard/parent_child_new.json
   CONFUSION_MATRIX:
     ENABLE: True
-    # SUBSET_PATH: tensorboard/subset.txt
+    SUBSET_PATH: tensorboard/subset.txt
     # Path to txt file contains class names separated by newline characters.
                  # Only classes in this file will be visualized in the confusion matrix.
   HISTOGRAM:
     ENABLE: True
     TOPK: 5   
     # Top-k most frequently predicted classes for each class in the dataset.
-    # SUBSET_PATH: tensorboard/subset.txt
+    SUBSET_PATH: tensorboard/subset.txt
     # Path to txt file contains class names separated by newline characters.
                  # Only classes in this file will be visualized with histograms.
 
