@@ -141,3 +141,10 @@ dmypy.json
 
 # Cython debug symbols
 cython_debug/
+
+
+# 自定义忽略文件或目录
+TimeSformer_divST_8x32_224_K400.pyth
+/build
+/checkpoints
+/result
