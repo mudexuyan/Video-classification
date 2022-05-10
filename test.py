@@ -22,11 +22,11 @@ from timesformer.models.vit import TimeSformer
 # print(data) 
 
 
-# model = TimeSformer(img_size=224, num_classes=10, num_frames=8, attention_type='divided_space_time',
-#                     pretrained_model='TimeSformer_divST_8x32_224_K400.pyth')
+model = TimeSformer(img_size=224, num_classes=10, num_frames=8, attention_type='divided_space_time',
+                    pretrained_model='result/model/train/checkpoints/checkpoint_epoch_00005.pyth')
 
-# total = sum([param.nelement() for param in model.parameters()])
-# print(total)
+total = sum([param.nelement() for param in model.parameters()])
+print(total)
 
 # model = TimeSformer(img_size=224, num_classes=10, num_frames=8, attention_type='joint_space_time',
 #                     pretrained_model='TimeSformer_divST_8x32_224_K400.pyth')
@@ -40,8 +40,8 @@ from timesformer.models.vit import TimeSformer
 # total = sum([param.nelement() for param in model.parameters()])
 # print(total)
 
-import time
-print(time.time())
-timeArray = time.localtime(1651994476)
-otherStyleTime = time.strftime("%Y-%m-%d %H:%M:%S", timeArray)
-print(otherStyleTime)
+# import time
+# print(time.time())
+# timeArray = time.localtime(1651994476)
+# otherStyleTime = time.strftime("%Y-%m-%d %H:%M:%S", timeArray)
+# print(otherStyleTime)

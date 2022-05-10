@@ -28,19 +28,20 @@ for file in fileList:
     for subFile in subFileList:
         tmp.append(filePath + file + '/' + subFile + ' ' + str(dict[file]))
 
-    # testTemp = random.sample(tmp, int(0.2*len(tmp)))
-    # train_val = [x for x in tmp if x not in testTemp]
-    # trainTemp = random.sample(train_val, int(0.8*len(train_val)))
-    # valTemp = [x for x in train_val if x not in trainTemp]
+    testTemp = random.sample(tmp, int(0.2*len(tmp)))
+    train_val = [x for x in tmp if x not in testTemp]
+    trainTemp = random.sample(train_val, int(0.8*len(train_val)))
+    valTemp = [x for x in train_val if x not in trainTemp]
+    
     # testTemp = random.sample(tmp, int(0.01*len(tmp)))
     # train_val = [x for x in tmp if x not in testTemp]
     # trainTemp = random.sample(train_val, int(0.8*len(train_val)))
     # valTemp = [x for x in train_val if x not in trainTemp]
     
-    testTemp = random.sample(tmp, int(0.98*len(tmp)))
-    train_val = [x for x in tmp if x not in testTemp]
-    trainTemp = random.sample(train_val, int(0.8*len(train_val)))
-    valTemp = [x for x in train_val if x not in trainTemp]
+    # testTemp = random.sample(tmp, int(0.98*len(tmp)))
+    # train_val = [x for x in tmp if x not in testTemp]
+    # trainTemp = random.sample(train_val, int(0.8*len(train_val)))
+    # valTemp = [x for x in train_val if x not in trainTemp]
 
     trainList.extend(trainTemp)
     testList.extend(testTemp)

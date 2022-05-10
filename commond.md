@@ -52,6 +52,7 @@ print(data)
 divided_space_time  121266442
 joint_space_time  85812490
 space_only  85806346
+model 135431434
 
 
 ('model.blocks.11', Block(

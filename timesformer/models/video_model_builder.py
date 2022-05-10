@@ -775,6 +775,8 @@ class X3D(nn.Module):
                 act_func=cfg.MODEL.HEAD_ACT,
                 bn_lin5_on=cfg.X3D.BN_LIN5,
             )
+            self.head_name = "head{}".format("classification")
+            self.add_module(self.head_name, head)
 
     def forward(self, x, bboxes=None):
         for module in self.children():
