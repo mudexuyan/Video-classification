@@ -104,6 +104,7 @@ class Block(nn.Module):
             self.temporal_attn = Attention(
               dim, num_heads=num_heads, qkv_bias=qkv_bias, qk_scale=qk_scale, attn_drop=attn_drop, proj_drop=drop)
             self.temporal_fc = nn.Linear(dim, dim)
+            self.spatial_fc = nn.Linear(dim, dim)
             self.concate = nn.Linear(2*dim, dim)
 
         ## drop path
@@ -128,7 +129,7 @@ class Block(nn.Module):
             res_temporal = self.drop_path(self.temporal_attn(self.temporal_norm1(xt)))
             res_temporal = rearrange(res_temporal, '(b h w) t m -> b (h w t) m',b=B,h=H,w=W,t=T)
             res_temporal = self.temporal_fc(res_temporal)
-            xt = x[:,1:,:] + res_temporal
+            # xt = x[:,1:,:] + res_temporal
 
             ## Spatial
             ## Temporal atten里的input没有pos_embed
@@ -147,13 +148,15 @@ class Block(nn.Module):
             cls_token = res_spatial[:,0,:]
             cls_token = rearrange(cls_token, '(b t) m -> b t m',b=B,t=T)
             cls_token = torch.mean(cls_token,1,True) ## averaging for every frame
+
             res_spatial = res_spatial[:,1:,:]
             res_spatial = rearrange(res_spatial, '(b t) (h w) m -> b (h w t) m',b=B,h=H,w=W,t=T)
-
-            xs = x[:,1:,:] + res_spatial
-            res = torch.cat([xs, xt], dim=2) # b (h w t) m*2
+            res_spatial = self.spatial_fc(res_spatial)
+            
+            # fuse
+            res = torch.cat([res_spatial, res_temporal], dim=2) # b (h w t) m*2
             res = self.concate(res) # b (h w t) m
-
+            
             ## Mlp
             x = x + torch.cat((cls_token, res), 1)
             x = x + self.drop_path(self.mlp(self.norm2(x)))

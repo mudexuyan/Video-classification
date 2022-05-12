@@ -16,6 +16,8 @@ nohup python tools/run_net.py --cfg configs/Kinetics/TimeSformer_divST_8x32_224.
 nohup yourcommand > nohup.log 2>&1 &
 nohup python tools/run_net.py --cfg configs/Kinetics/TimeSformer_divST_8x32_224.yaml > result/train/nohup.log 2>&1 &
 
+nohup python tools/run_net.py --cfg configs/Kinetics/model.yaml > result/model/model_nohup.log 2>&1 &
+
 # 查看9999端口
 lsof -i:9999
 
