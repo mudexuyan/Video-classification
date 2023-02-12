@@ -18,6 +18,10 @@ from .build import MODEL_REGISTRY
 from torch import einsum
 from einops import rearrange, reduce, repeat
 
+# 修改mlp
+from timesformer.models.MLPMixer.mlp_mixer import MLPMixer
+
+
 def _cfg(url='', **kwargs):
     return {
         'url': url,
@@ -124,6 +128,7 @@ class Block(nn.Module):
             return x
         elif self.attention_type == 'divided_space_time':
             ## Temporal
+            # x= b (1+d*d*t) m
             xt = x[:,1:,:]
             xt = rearrange(xt, 'b (h w t) m -> (b h w) t m',b=B,h=H,w=W,t=T)
             res_temporal = self.drop_path(self.temporal_attn(self.temporal_norm1(xt)))
@@ -162,6 +167,7 @@ class Block(nn.Module):
             x = x + self.drop_path(self.mlp(self.norm2(x)))
             return x
 
+
 class PatchEmbed(nn.Module):
     """ Image to Patch Embedding
     """
@@ -179,9 +185,9 @@ class PatchEmbed(nn.Module):
     def forward(self, x):
         B, C, T, H, W = x.shape
         x = rearrange(x, 'b c t h w -> (b t) c h w')
-        x = self.proj(x)
+        x = self.proj(x)                   # (b t) embed_dim h/p w/p 
         W = x.size(-1)
-        x = x.flatten(2).transpose(1, 2)
+        x = x.flatten(2).transpose(1, 2)  # (b t) embed_dim h/p*w/p  ->  (b t) h/p*w/p embed_dim
         return x, T, W
 
 
@@ -258,9 +264,9 @@ class VisionTransformer(nn.Module):
 
     def forward_features(self, x):
         B = x.shape[0]
-        x, T, W = self.patch_embed(x)
+        x, T, W = self.patch_embed(x)  # x= (b t) h/p*w/p embed_dim
         cls_tokens = self.cls_token.expand(x.size(0), -1, -1)
-        x = torch.cat((cls_tokens, x), dim=1)
+        x = torch.cat((cls_tokens, x), dim=1)  # x= (b t) h/p*w/p+1 embed_dim
 
         ## resizing the positional embeddings in case they don't match the input at inference
         if x.size(1) != self.pos_embed.size(1):
@@ -310,7 +316,9 @@ class VisionTransformer(nn.Module):
         return x[:, 0]
 
     def forward(self, x):
+        print(x.shape)
         x = self.forward_features(x)
+        print(x.shape)
         x = self.head(x)
         return x
 
@@ -359,3 +367,141 @@ class TimeSformer(nn.Module):
     def forward(self, x):
         x = self.model(x)
         return x
+
+
+class MLPBlock(nn.Module):
+
+    def __init__(self, dim, num_heads, mlp_ratio=4., qkv_bias=False, qk_scale=None, drop=0., attn_drop=0.,
+                 drop_path=0.1, act_layer=nn.GELU, norm_layer=nn.LayerNorm):
+        super().__init__()
+
+        ## drop path
+        self.drop_path = DropPath(drop_path) if drop_path > 0. else nn.Identity()
+        self.norm = norm_layer(dim)
+        self.dim=dim
+
+        mlp_hidden_dim = int(dim * mlp_ratio)
+        self.mlp = Mlp(in_features=dim, hidden_features=mlp_hidden_dim, act_layer=act_layer, drop=drop)
+        self.mpl_s = MLPMixer(
+            image_size = 224,
+            channels = 3,
+            num_patches = 196,
+            dim = dim,
+        )
+        self.mpl_t = MLPMixer(
+            image_size = 224,
+            channels = 3,
+            num_patches = 8,  # 区别与 空间信息，时间信息分组
+            dim = dim,
+        )
+        self.concate = nn.Linear(2*dim, dim)
+
+
+    def forward(self, x, B, T, W):
+        # num_spatial_tokens = (x.size(1) - 1) // T
+        # H = num_spatial_tokens // W
+        # x= (b t) h/p*w/p embed_dim
+        x_spatial = self.drop_path(self.mpl_s(x))  # (bt)  (h1w1)  d          h1=h/patch_size
+
+        x_temporal = rearrange(x, '(b t) n d -> (b n) t d',b=B,t=T,d=self.dim)    # n=h1*w1  h1=h/patch_size
+        x_temporal = self.drop_path(self.mpl_t(x_temporal))
+        x_temporal = rearrange(x_temporal, '(b n) t d -> (b t) n d ',b=B,t=T,d=self.dim)
+
+        res = torch.cat([x_spatial, x_temporal], dim=2) # bt hw m*2
+        res = self.concate(res) # bt hw m
+            
+        # Mlp
+        x = x + self.drop_path(self.mlp(self.norm(res)))
+        return x  
+
+@MODEL_REGISTRY.register()
+class MLPMixerBase(nn.Module):
+    def __init__(self, img_size=224, patch_size=16, in_chans=3, num_classes=1000, embed_dim=768, depth=12,
+                 num_heads=12, mlp_ratio=2., mlp_ratio_token=0.5, qkv_bias=False, qk_scale=None, drop_rate=0., attn_drop_rate=0.,
+                 drop_path_rate=0.1, hybrid_backbone=None, norm_layer=nn.LayerNorm, num_frames=8, dropout=0.):
+        super(MLPMixerBase, self).__init__()
+        self.depth = depth
+        self.dropout = nn.Dropout(dropout)
+        self.num_classes = num_classes
+        
+        self.patch_embed = PatchEmbed(
+        img_size=224, patch_size=patch_size, in_chans=3, embed_dim=embed_dim)
+        num_patches = self.patch_embed.num_patches
+        chan_first, chan_last = partial(nn.Conv1d, kernel_size = 1), nn.Linear
+
+
+        ## Attention Blocks
+        dpr = [x.item() for x in torch.linspace(0, drop_path_rate, self.depth)]  # stochastic depth decay rule
+    
+        self.blocks = nn.ModuleList([
+            MLPBlock(
+                dim=embed_dim, num_heads=num_heads, mlp_ratio=mlp_ratio, qkv_bias=qkv_bias, qk_scale=qk_scale,
+                drop=drop_rate, attn_drop=attn_drop_rate, drop_path=dpr[i], norm_layer=norm_layer)
+            for i in range(self.depth)])
+        self.norm = norm_layer(embed_dim)
+
+        # Classifier head
+        self.head = nn.Linear(embed_dim, num_classes) if num_classes > 0 else nn.Identity()
+
+        self.apply(self._init_weights)
+
+
+    def _init_weights(self, m):
+        if isinstance(m, nn.Linear):
+            trunc_normal_(m.weight, std=.02)
+            if isinstance(m, nn.Linear) and m.bias is not None:
+                nn.init.constant_(m.bias, 0)
+        elif isinstance(m, nn.LayerNorm):
+            nn.init.constant_(m.bias, 0)
+            nn.init.constant_(m.weight, 1.0)
+
+    @torch.jit.ignore
+    def no_weight_decay(self):
+        return {'pos_embed', 'cls_token', 'time_embed'}
+
+    def get_classifier(self):
+        return self.head
+
+    def reset_classifier(self, num_classes, global_pool=''):
+        self.num_classes = num_classes
+        self.head = nn.Linear(self.embed_dim, num_classes) if num_classes > 0 else nn.Identity()
+
+    def forward_features(self, x):
+        # x = B C T H W
+        B = x.shape[0]
+        T = x.shape[2]
+        W = x.shape[4]
+        x, T, W = self.patch_embed(x)  # x= (b t) h/p*w/p embed_dim
+
+        ##  blocks
+        for blk in self.blocks:
+            x = blk(x, B, T, W)
+        x = self.norm(x)
+        return x,B,T,W
+
+    def forward(self, x):
+        x,B,T,W = self.forward_features(x)
+        x = rearrange(x, '(b t) (h w) m -> b (h w t) m',b=B,h=W,w=W,t=T)    
+        x = self.head(reduce(x,'b n c -> b c', 'mean'))
+        return x
+
+@MODEL_REGISTRY.register()
+class MLPMixerModel(nn.Module):
+    def __init__(self, cfg, **kwargs):
+        super(MLPMixerModel, self).__init__()
+        self.pretrained=True
+        patch_size = 16
+        self.model = MLPMixerBase(img_size=cfg.DATA.TRAIN_CROP_SIZE, num_classes=cfg.MODEL.NUM_CLASSES, patch_size=patch_size, embed_dim=768, depth=12, num_heads=12, mlp_ratio=4, mlp_ratio_token=0.5,qkv_bias=True, norm_layer=partial(nn.LayerNorm, eps=1e-6), drop_rate=0., attn_drop_rate=0., drop_path_rate=0.1, num_frames=cfg.DATA.NUM_FRAMES, **kwargs)
+
+        self.model.default_cfg = default_cfgs['vit_base_patch16_224']
+        self.num_patches = (cfg.DATA.TRAIN_CROP_SIZE // patch_size) * (cfg.DATA.TRAIN_CROP_SIZE // patch_size)
+        pretrained_model=cfg.TIMESFORMER.PRETRAINED_MODEL
+        # if self.pretrained:
+        #     load_pretrained(self.model, num_classes=self.model.num_classes, in_chans=kwargs.get('in_chans', 3), filter_fn=_conv_filter, img_size=cfg.DATA.TRAIN_CROP_SIZE, num_patches=self.num_patches, attention_type=self.attention_type, pretrained_model=pretrained_model)
+
+    def forward(self, x):
+
+        x = self.model(x)
+        return x
+
+

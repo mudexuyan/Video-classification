@@ -7,6 +7,7 @@ top
 
 # 训练
 python tools/run_net.py --cfg configs/Kinetics/TimeSformer_divST_8x32_224.yaml 
+
 # 测试
 python tools/run_net.py --cfg configs/Kinetics/TimeSformer_TEST.yaml
 
@@ -16,7 +17,7 @@ nohup python tools/run_net.py --cfg configs/Kinetics/TimeSformer_divST_8x32_224.
 nohup yourcommand > nohup.log 2>&1 &
 nohup python tools/run_net.py --cfg configs/Kinetics/TimeSformer_divST_8x32_224.yaml > result/train/nohup.log 2>&1 &
 
-nohup python tools/run_net.py --cfg configs/Kinetics/model.yaml > result/model/model_nohup.log 2>&1 &
+nohup python tools/run_net.py --cfg configs/Kinetics/test.yaml > result/test/model_nohup.log 2>&1 &
 
 # 查看9999端口
 lsof -i:9999
@@ -54,7 +55,7 @@ print(data)
 divided_space_time  121266442
 joint_space_time  85812490
 space_only  85806346
-model 135431434
+model 135431434\142518538
 
 
 ('model.blocks.11', Block(
@@ -119,3 +120,20 @@ model 135431434
 ('model.blocks.11.mlp.drop', Dropout(p=0.0, inplace=False))
 
 
+## git 回退版本
+git reset --hard HEAD^         回退到上个版本
+git reset --hard HEAD~3        回退到前3次提交之前，以此类推，回退到n次提交之前
+git reset --hard commit_id
+git push origin HEAD --force   强制回退
+
+1. git log 找到唯一编码，如下：685a1cac7779575a3ecd26f2064c1fc64eed4433
+commit 685a1cac7779575a3ecd26f2064c1fc64eed4433
+Author: mudexuyan <823223071@qq.com>
+Date:   Sun May 8 14:08:25 2022 +0800
+2. git reset --hard 685a1cac7779575a3ecd26f2064c1fc64eed4433
+3. 推送到github
+
+
+## 查看分支
+1. git branch -a，所有分支
+2. git branch -vv 本地分支和远程分支对应情况
