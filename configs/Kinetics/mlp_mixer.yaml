@@ -2,8 +2,8 @@ TRAIN:
   ENABLE: True
   DATASET: kinetics
   BATCH_SIZE: 2
-  EVAL_PERIOD: 2
-  CHECKPOINT_PERIOD: 2
+  EVAL_PERIOD: 5
+  CHECKPOINT_PERIOD: 5
   AUTO_RESUME: True
 DATA:
   PATH_TO_DATA_DIR: ../DataSet/
@@ -19,7 +19,7 @@ SOLVER:
   LR_POLICY: steps_with_relative_lrs
   STEPS: [0, 11, 14]
   LRS: [1, 0.1, 0.01]
-  MAX_EPOCH: 6 #接着训练，在此基础上加上训练的轮数，上一次训练了10次，如果再训练5次，调整为15
+  MAX_EPOCH: 20 #接着训练，在此基础上加上训练的轮数，上一次训练了10次，如果再训练5次，调整为15
   MOMENTUM: 0.9
   WEIGHT_DECAY: 1e-4
   OPTIMIZING_METHOD: sgd
@@ -42,5 +42,25 @@ NUM_GPUS: 2
 NUM_SHARDS: 1
 RNG_SEED: 0
 
+TENSORBOARD:
+  ENABLE: True
+  LOG_DIR: tensorboard/log
+  # Leave empty to use cfg.OUTPUT_DIR/runs-{cfg.TRAIN.DATASET} as path.
+  CLASS_NAMES_PATH: tensorboard/class_name_new.json
+  # Path to json file providing class_name - id mapping.
+  CATEGORIES_PATH: tensorboard/parent_child_new.json
+  CONFUSION_MATRIX:
+    ENABLE: True
+    SUBSET_PATH: tensorboard/subset.txt
+    # Path to txt file contains class names separated by newline characters.
+                 # Only classes in this file will be visualized in the confusion matrix.
+  HISTOGRAM:
+    ENABLE: True
+    TOPK: 5   
+    # Top-k most frequently predicted classes for each class in the dataset.
+    SUBSET_PATH: tensorboard/subset.txt
+    # Path to txt file contains class names separated by newline characters.
+                 # Only classes in this file will be visualized with histograms.
 
-OUTPUT_DIR: result/testModel/mlp_mixer/
+
+OUTPUT_DIR: result/mlp/
