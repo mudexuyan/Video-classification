@@ -5,8 +5,14 @@ conda activate timesformer
 nvidia-smi
 top 
 
+# 查看磁盘
+df -h
+# 查看当前目录容量
+du -sh ./*
+
 # 训练
 python tools/run_net.py --cfg configs/Kinetics/TimeSformer_divST_8x32_224.yaml 
+nohup python tools/run_net.py --cfg configs/Kinetics/mlp_mixer.yaml > result/mlp/nohup.log 2>&1 &
 
 # 测试
 python tools/run_net.py --cfg configs/Kinetics/TimeSformer_TEST.yaml

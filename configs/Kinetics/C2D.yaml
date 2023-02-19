@@ -72,4 +72,4 @@ TENSORBOARD:
     SUBSET_PATH: tensorboard/subset.txt
     # Path to txt file contains class names separated by newline characters.
                  # Only classes in this file will be visualized with histograms.
-OUTPUT_DIR: result/C2D/train/
+OUTPUT_DIR: result/C2D/

@@ -15,11 +15,11 @@ DATA:
   INPUT_CHANNEL_NUM: [3]
 
 SOLVER:
-  BASE_LR: 0.005
+  BASE_LR: 0.01
   LR_POLICY: steps_with_relative_lrs
   STEPS: [0, 11, 14]
   LRS: [1, 0.1, 0.01]
-  MAX_EPOCH: 20 #接着训练，在此基础上加上训练的轮数，上一次训练了10次，如果再训练5次，调整为15
+  MAX_EPOCH: 160 #接着训练，在此基础上加上训练的轮数，上一次训练了10次，如果再训练5次，调整为15
   MOMENTUM: 0.9
   WEIGHT_DECAY: 1e-4
   OPTIMIZING_METHOD: sgd
@@ -40,7 +40,7 @@ DATA_LOADER:
   PIN_MEMORY: True
 NUM_GPUS: 2
 NUM_SHARDS: 1
-RNG_SEED: 0
+RNG_SEED: 3407
 
 TENSORBOARD:
   ENABLE: True
