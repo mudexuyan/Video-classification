@@ -1,0 +1,284 @@
+{
+    "SalsaSpin": [
+        "SalsaSpin"
+    ],
+    "BlowingCandles": [
+        "BlowingCandles"
+    ],
+    "BlowDryHair": [
+        "BlowDryHair"
+    ],
+    "Skiing": [
+        "Skiing"
+    ],
+    "Bowling": [
+        "Bowling"
+    ],
+    "BrushingTeeth": [
+        "BrushingTeeth"
+    ],
+    "HandstandWalking": [
+        "HandstandWalking"
+    ],
+    "JumpRope": [
+        "JumpRope"
+    ],
+    "ThrowDiscus": [
+        "ThrowDiscus"
+    ],
+    "PullUps": [
+        "PullUps"
+    ],
+    "brush_hair": [
+        "brush_hair"
+    ],
+    "PommelHorse": [
+        "PommelHorse"
+    ],
+    "JumpingJack": [
+        "JumpingJack"
+    ],
+    "Diving": [
+        "Diving"
+    ],
+    "PlayingPiano": [
+        "PlayingPiano"
+    ],
+    "stand": [
+        "stand"
+    ],
+    "StillRings": [
+        "StillRings"
+    ],
+    "shoot_gun": [
+        "shoot_gun"
+    ],
+    "sit": [
+        "sit"
+    ],
+    "BreastStroke": [
+        "BreastStroke"
+    ],
+    "Swing": [
+        "Swing"
+    ],
+    "LongJump": [
+        "LongJump"
+    ],
+    "SoccerJuggling": [
+        "SoccerJuggling"
+    ],
+    "Hammering": [
+        "Hammering"
+    ],
+    "push": [
+        "push"
+    ],
+    "wave": [
+        "wave"
+    ],
+    "YoYo": [
+        "YoYo"
+    ],
+    "VolleyballSpiking": [
+        "VolleyballSpiking"
+    ],
+    "PlayingFlute": [
+        "PlayingFlute"
+    ],
+    "Billiards": [
+        "Billiards"
+    ],
+    "pullup": [
+        "pullup"
+    ],
+    "Kayaking": [
+        "Kayaking"
+    ],
+    "Skijet": [
+        "Skijet"
+    ],
+    "WallPushups": [
+        "WallPushups"
+    ],
+    "Shotput": [
+        "Shotput"
+    ],
+    "Haircut": [
+        "Haircut"
+    ],
+    "bow": [
+        "bow"
+    ],
+    "PoleVault": [
+        "PoleVault"
+    ],
+    "UnevenBars": [
+        "UnevenBars"
+    ],
+    "TaiChi": [
+        "TaiChi"
+    ],
+    "HighJump": [
+        "HighJump"
+    ],
+    "Punch": [
+        "Punch"
+    ],
+    "phone": [
+        "phone"
+    ],
+    "Rafting": [
+        "Rafting"
+    ],
+    "Surfing": [
+        "Surfing"
+    ],
+    "MoppingFloor": [
+        "MoppingFloor"
+    ],
+    "ShavingBeard": [
+        "ShavingBeard"
+    ],
+    "PlayingSitar": [
+        "PlayingSitar"
+    ],
+    "BoxingPunchingBag": [
+        "BoxingPunchingBag"
+    ],
+    "pick": [
+        "pick"
+    ],
+    "jump": [
+        "jump"
+    ],
+    "run": [
+        "run"
+    ],
+    "HulaHoop": [
+        "HulaHoop"
+    ],
+    "CliffDiving": [
+        "CliffDiving"
+    ],
+    "FrontCrawl": [
+        "FrontCrawl"
+    ],
+    "PlayingGuitar": [
+        "PlayingGuitar"
+    ],
+    "pour": [
+        "pour"
+    ],
+    "TennisSwing": [
+        "TennisSwing"
+    ],
+    "Biking": [
+        "Biking"
+    ],
+    "PlayingDhol": [
+        "PlayingDhol"
+    ],
+    "Fencing": [
+        "Fencing"
+    ],
+    "swing_baseball": [
+        "swing_baseball"
+    ],
+    "talk": [
+        "talk"
+    ],
+    "ParallelBars": [
+        "ParallelBars"
+    ],
+    "BasketballDunk": [
+        "BasketballDunk"
+    ],
+    "WalkingWithDog": [
+        "WalkingWithDog"
+    ],
+    "ApplyEyeMakeup": [
+        "ApplyEyeMakeup"
+    ],
+    "Rowing": [
+        "Rowing"
+    ],
+    "Typing": [
+        "Typing"
+    ],
+    "shoot_bow": [
+        "shoot_bow"
+    ],
+    "drink": [
+        "drink"
+    ],
+    "SkyDiving": [
+        "SkyDiving"
+    ],
+    "CuttingInKitchen": [
+        "CuttingInKitchen"
+    ],
+    "SkateBoarding": [
+        "SkateBoarding"
+    ],
+    "straight": [
+        "straight"
+    ],
+    "TrampolineJumping": [
+        "TrampolineJumping"
+    ],
+    "ApplyLipstick": [
+        "ApplyLipstick"
+    ],
+    "clap": [
+        "clap"
+    ],
+    "SumoWrestling": [
+        "SumoWrestling"
+    ],
+    "BenchPress": [
+        "BenchPress"
+    ],
+    "climb_stairs": [
+        "climb_stairs"
+    ],
+    "catch": [
+        "catch"
+    ],
+    "PlayingViolin": [
+        "PlayingViolin"
+    ],
+    "SoccerPenalty": [
+        "SoccerPenalty"
+    ],
+    "WritingOnBoard": [
+        "WritingOnBoard"
+    ],
+    "Basketball": [
+        "Basketball"
+    ],
+    "PlayingTabla": [
+        "PlayingTabla"
+    ],
+    "BabyCrawling": [
+        "BabyCrawling"
+    ],
+    "TableTennisShot": [
+        "TableTennisShot"
+    ],
+    "throw": [
+        "throw"
+    ],
+    "walk": [
+        "walk"
+    ],
+    "HorseRiding": [
+        "HorseRiding"
+    ],
+    "Drumming": [
+        "Drumming"
+    ],
+    "PushUps": [
+        "PushUps"
+    ]
+}

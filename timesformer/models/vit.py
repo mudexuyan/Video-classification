@@ -503,7 +503,7 @@ class MLPMixerModel(nn.Module):
         super(MLPMixerModel, self).__init__()
         self.pretrained=True
         patch_size = 16
-        self.model = MLPMixerBase(img_size=cfg.DATA.TRAIN_CROP_SIZE, num_classes=cfg.MODEL.NUM_CLASSES, patch_size=patch_size, embed_dim=768, depth=12, num_heads=12, mlp_ratio=4, mlp_ratio_token=0.5,qkv_bias=True, norm_layer=partial(nn.LayerNorm, eps=1e-6), drop_rate=0., attn_drop_rate=0., drop_path_rate=0.1, num_frames=cfg.DATA.NUM_FRAMES, **kwargs)
+        self.model = MLPMixerBase(img_size=cfg.DATA.TRAIN_CROP_SIZE, num_classes=cfg.MODEL.NUM_CLASSES, patch_size=patch_size, embed_dim=768, depth=4, num_heads=12, mlp_ratio=4, mlp_ratio_token=0.5,qkv_bias=True, norm_layer=partial(nn.LayerNorm, eps=1e-6), drop_rate=0., attn_drop_rate=0., drop_path_rate=0.1, num_frames=cfg.DATA.NUM_FRAMES, **kwargs)
 
         self.model.default_cfg = default_cfgs['vit_base_patch16_224']
         self.num_patches = (cfg.DATA.TRAIN_CROP_SIZE // patch_size) * (cfg.DATA.TRAIN_CROP_SIZE // patch_size)
