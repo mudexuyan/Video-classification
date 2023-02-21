@@ -379,19 +379,20 @@ class MLPBlock(nn.Module):
         self.drop_path = DropPath(drop_path) if drop_path > 0. else nn.Identity()
         self.norm = norm_layer(dim)
         self.dim=dim
-
+        self.num_patches_s = 49
+        self.num_patches_t = 4
         mlp_hidden_dim = int(dim * mlp_ratio)
         self.mlp = Mlp(in_features=dim, hidden_features=mlp_hidden_dim, act_layer=act_layer, drop=drop)
         self.mpl_s = MLPMixer(
             image_size = 224,
             channels = 3,
-            num_patches = 196,
+            num_patches = self.num_patches_s,
             dim = dim,
         )
         self.mpl_t = MLPMixer(
             image_size = 224,
             channels = 3,
-            num_patches = 8,  # 区别与 空间信息，时间信息分组
+            num_patches = self.num_patches_t,  # 区别与 空间信息，时间信息分组
             dim = dim,
         )
         self.concate = nn.Linear(2*dim, dim)
@@ -401,10 +402,21 @@ class MLPBlock(nn.Module):
         # num_spatial_tokens = (x.size(1) - 1) // T
         # H = num_spatial_tokens // W
         # x= (b t) h/p*w/p embed_dim
-        x_spatial = self.drop_path(self.mpl_s(x))  # (bt)  (h1w1)  d          h1=h/patch_size
+        list_spatial = torch.split(x,self.num_patches_s,dim=1)
+        res_s = []
+        for i in list_spatial:
+            res_s.append(self.drop_path(self.mpl_s(i)))
+        x_spatial = torch.cat(res_s,dim=1); 
+
+        # x_spatial = self.drop_path(self.mpl_s(x))  # (bt)  (h1w1)  d          h1=h/patch_size
 
         x_temporal = rearrange(x, '(b t) n d -> (b n) t d',b=B,t=T,d=self.dim)    # n=h1*w1  h1=h/patch_size
-        x_temporal = self.drop_path(self.mpl_t(x_temporal))
+        list_temporal = torch.split(x_temporal,self.num_patches_t,dim=1)
+        res_t = []
+        for i in list_temporal:
+            res_t.append(self.drop_path(self.mpl_t(i)))
+        x_temporal = torch.cat(res_t,dim=1); 
+        # x_temporal = self.drop_path(self.mpl_t(x_temporal))
         x_temporal = rearrange(x_temporal, '(b n) t d -> (b t) n d ',b=B,t=T,d=self.dim)
 
         res = torch.cat([x_spatial, x_temporal], dim=2) # bt hw m*2

@@ -1,7 +1,7 @@
 from torch import nn
 from functools import partial
 from einops.layers.torch import Rearrange, Reduce
-
+import torch
 pair = lambda x: x if isinstance(x, tuple) else (x, x)
 
 class PreNormResidual(nn.Module):
@@ -29,6 +29,17 @@ def MLPMixer(*, image_size, channels, num_patches, dim, depth=2, expansion_facto
     # num_patches = (image_h // patch_size) * (image_w // patch_size)
     num_patches = num_patches
     chan_first, chan_last = partial(nn.Conv1d, kernel_size = 1), nn.Linear
+    # feed1 = FeedForward(num_patches, expansion_factor, dropout, chan_first)
+    # feed2 = FeedForward(dim, expansion_factor_token, dropout, chan_last)
+    # pre1 = PreNormResidual(dim,feed1) 
+    # pre2 = PreNormResidual(dim,feed2)
+    # list = torch.split(x,num_patches,dim=1)
+    # res = []
+    # for i in list:
+    #     tmp = pre1(i);
+    #     tmp = pre2(tmp)
+    #     res.append(tmp)
+    # return torch.cat(res,dim=1); 
 
     return nn.Sequential(
         # Rearrange('b c (h p1) (w p2) -> b (h w) (p1 p2 c)', p1 = patch_size, p2 = patch_size),

@@ -1,8 +1,8 @@
 TRAIN:
   ENABLE: True
   DATASET: kinetics
-  BATCH_SIZE: 2
-  EVAL_PERIOD: 5
+  BATCH_SIZE: 4
+  EVAL_PERIOD: 10
   CHECKPOINT_PERIOD: 5
   AUTO_RESUME: True
 DATA:
@@ -15,11 +15,11 @@ DATA:
   INPUT_CHANNEL_NUM: [3]
 
 SOLVER:
-  BASE_LR: 0.01
+  BASE_LR: 0.005
   LR_POLICY: steps_with_relative_lrs
   STEPS: [0, 11, 14]
   LRS: [1, 0.1, 0.01]
-  MAX_EPOCH: 160 #接着训练，在此基础上加上训练的轮数，上一次训练了10次，如果再训练5次，调整为15
+  MAX_EPOCH: 280 #接着训练，在此基础上加上训练的轮数，上一次训练了10次，如果再训练5次，调整为15
   MOMENTUM: 0.9
   WEIGHT_DECAY: 1e-4
   OPTIMIZING_METHOD: sgd
@@ -32,7 +32,7 @@ MODEL:
 TEST:
   ENABLE: True
   DATASET: kinetics
-  BATCH_SIZE: 2
+  BATCH_SIZE: 4
   NUM_ENSEMBLE_VIEWS: 1
   NUM_SPATIAL_CROPS: 3
 DATA_LOADER:
@@ -63,4 +63,4 @@ TENSORBOARD:
                  # Only classes in this file will be visualized with histograms.
 
 
-OUTPUT_DIR: result/mlp/
+OUTPUT_DIR: result/mlp2/
