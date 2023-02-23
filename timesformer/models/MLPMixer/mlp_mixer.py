@@ -52,3 +52,13 @@ def MLPMixer(*, image_size, channels, num_patches, dim, depth=1, expansion_facto
         # Reduce('b n c -> b c', 'mean'),
         # nn.Linear(dim, num_classes)
     )
+
+def MLPMixer_channel(*, image_size, channels, num_patches, dim,expansion_factor = 4, expansion_factor_token = 0.5, dropout = 0.):
+
+    num_patches = num_patches
+    chan_first, chan_last = partial(nn.Conv1d, kernel_size = 1), nn.Linear
+
+    return nn.Sequential(
+        PreNormResidual(dim, FeedForward(num_patches, expansion_factor, dropout, chan_first)),
+        PreNormResidual(dim, FeedForward(dim, expansion_factor_token, dropout, chan_last))
+    )
