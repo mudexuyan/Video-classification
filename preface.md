@@ -18,6 +18,8 @@
 5. 对给定的视频帧执行空间采样。如果spatial_idx为-1，则对给定的帧执行随机缩放、随机裁剪和随机翻转。如果spatial_idx为0、1或2，则对给定的spatial_idx执行空间均匀采样。
    1. spatial_sampling()
    2. torchvision.transforms.Resize()可实现
+6. 训练
+    loss: cross_entropy
 
 
 ## python注册器

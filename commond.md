@@ -48,6 +48,9 @@ CUDA_VISIBLE_DEVICES=1 nohup python tools/run_net.py --cfg configs/Kinetics/Time
 tensorboard  --port=<port-number> --logdir result/train/tensorboard/log
 tensorboard  --port=<port-number> --logdir result/test/tensorboard/log
 tensorboard  --port=6006 --logdir result/test/tensorboard/log
+
+# 同时显示多个模型
+tensorboard --port=1111 --logdir_spec=videoformer:result/videoformer/tensorboard/log,mlp:result/mlp/tensorboard/log 
 # 显示直方图
 tensorboard  --port=6006 --logdir result/test/tensorboard/log  --load_fast false
 
