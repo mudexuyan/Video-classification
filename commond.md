@@ -50,7 +50,7 @@ tensorboard  --port=<port-number> --logdir result/test/tensorboard/log
 tensorboard  --port=6006 --logdir result/test/tensorboard/log
 
 # 同时显示多个模型
-tensorboard --port=1111 --logdir_spec=videoformer:result/videoformer/tensorboard/log,mlp:result/mlp/tensorboard/log 
+tensorboard --port=1111 --logdir_spec=videoformer:result/videoformer/tensorboard/log,mlp:result/mlp/tensorboard/log,slowfast:result/slowfast/tensorboard/log 
 # 显示直方图
 tensorboard  --port=6006 --logdir result/test/tensorboard/log  --load_fast false
 
