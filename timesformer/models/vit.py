@@ -471,7 +471,7 @@ class MLPBlock(nn.Module):
 
 @MODEL_REGISTRY.register()
 class MLPMixerBase(nn.Module):
-    def __init__(self, img_size=224, patch_size=16, in_chans=3, num_classes=1000, embed_dim=768, depth=12,
+    def __init__(self, img_size=224, patch_size=16, in_chans=3, num_classes=1000, embed_dim=768, depth=1,
                  num_heads=12, mlp_ratio=2., mlp_ratio_token=0.5, qkv_bias=False, qk_scale=None, drop_rate=0., attn_drop_rate=0.,
                  drop_path_rate=0.1, hybrid_backbone=None, norm_layer=nn.LayerNorm, num_frames=8, dropout=0.):
         super(MLPMixerBase, self).__init__()

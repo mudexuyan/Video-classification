@@ -129,7 +129,8 @@ def perform_test(test_loader, model, test_meter, cfg, writer=None):
 
             with PathManager.open(save_path, "wb") as f:
                 
-                pickle.dump([all_preds, all_labels], f)
+                # pickle.dump([all_preds, all_labels], f)
+                pickle.dump([torch.max(all_preds,1)[1], all_labels], f)
 
             logger.info(
                 "Successfully saved prediction results to {}".format(save_path)
