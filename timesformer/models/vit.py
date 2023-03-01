@@ -127,14 +127,53 @@ class Block(nn.Module):
             x = x + self.drop_path(self.mlp(self.norm2(x)))
             return x
         elif self.attention_type == 'divided_space_time':
-            ## Temporal
+            # ## Temporal
+            # # x= b (1+d*d*t) m
+            # xt = x[:,1:,:]
+            # xt = rearrange(xt, 'b (h w t) m -> (b h w) t m',b=B,h=H,w=W,t=T)
+            # res_temporal = self.drop_path(self.temporal_attn(self.temporal_norm1(xt)))
+            # res_temporal = rearrange(res_temporal, '(b h w) t m -> b (h w t) m',b=B,h=H,w=W,t=T)
+            # res_temporal = self.temporal_fc(res_temporal)
+            # # xt = x[:,1:,:] + res_temporal
+
+            # ## Spatial
+            # ## Temporal atten里的input没有pos_embed
+            # ## spatial atten里的input有pos_embed
+            # init_cls_token = x[:,0,:].unsqueeze(1)
+            # cls_token = init_cls_token.repeat(1, T, 1)
+            # cls_token = rearrange(cls_token, 'b t m -> (b t) m',b=B,t=T).unsqueeze(1)
+
+            # # xs = xt
+            # xs = x[:,1:,:]
+            # xs = rearrange(xs, 'b (h w t) m -> (b t) (h w) m',b=B,h=H,w=W,t=T)
+            # xs = torch.cat((cls_token, xs), 1)
+            # res_spatial = self.drop_path(self.attn(self.norm1(xs)))
+
+            # ### Taking care of CLS token
+            # cls_token = res_spatial[:,0,:]
+            # cls_token = rearrange(cls_token, '(b t) m -> b t m',b=B,t=T)
+            # cls_token = torch.mean(cls_token,1,True) ## averaging for every frame
+
+            # res_spatial = res_spatial[:,1:,:]
+            # res_spatial = rearrange(res_spatial, '(b t) (h w) m -> b (h w t) m',b=B,h=H,w=W,t=T)
+            # res_spatial = self.spatial_fc(res_spatial)
+            
+            # # fuse
+            # res = torch.cat([res_spatial, res_temporal], dim=2) # b (h w t) m*2
+            # res = self.concate(res) # b (h w t) m
+            
+            # ## Mlp
+            # x = x + torch.cat((cls_token, res), 1)
+            # x = x + self.drop_path(self.mlp(self.norm2(x)))
+            # return x
+              ## Temporal
             # x= b (1+d*d*t) m
             xt = x[:,1:,:]
             xt = rearrange(xt, 'b (h w t) m -> (b h w) t m',b=B,h=H,w=W,t=T)
             res_temporal = self.drop_path(self.temporal_attn(self.temporal_norm1(xt)))
             res_temporal = rearrange(res_temporal, '(b h w) t m -> b (h w t) m',b=B,h=H,w=W,t=T)
             res_temporal = self.temporal_fc(res_temporal)
-            # xt = x[:,1:,:] + res_temporal
+            xt = x[:,1:,:] + res_temporal
 
             ## Spatial
             ## Temporal atten里的input没有pos_embed
@@ -143,8 +182,7 @@ class Block(nn.Module):
             cls_token = init_cls_token.repeat(1, T, 1)
             cls_token = rearrange(cls_token, 'b t m -> (b t) m',b=B,t=T).unsqueeze(1)
 
-            # xs = xt
-            xs = x[:,1:,:]
+            xs = xt
             xs = rearrange(xs, 'b (h w t) m -> (b t) (h w) m',b=B,h=H,w=W,t=T)
             xs = torch.cat((cls_token, xs), 1)
             res_spatial = self.drop_path(self.attn(self.norm1(xs)))
@@ -156,14 +194,11 @@ class Block(nn.Module):
 
             res_spatial = res_spatial[:,1:,:]
             res_spatial = rearrange(res_spatial, '(b t) (h w) m -> b (h w t) m',b=B,h=H,w=W,t=T)
-            res_spatial = self.spatial_fc(res_spatial)
-            
-            # fuse
-            res = torch.cat([res_spatial, res_temporal], dim=2) # b (h w t) m*2
-            res = self.concate(res) # b (h w t) m
+            res = res_spatial
+            x = xt
             
             ## Mlp
-            x = x + torch.cat((cls_token, res), 1)
+            x = torch.cat((init_cls_token, x), 1) + torch.cat((cls_token, res), 1)
             x = x + self.drop_path(self.mlp(self.norm2(x)))
             return x
 
@@ -405,7 +440,7 @@ class MLPBlock(nn.Module):
 
 
     def forward(self, x, B, T, wp):
-
+        # wp，patch embedding后的宽或者高
         # 横向划分window
         # num_spatial_tokens = (x.size(1) - 1) // T
         # H = num_spatial_tokens // W
@@ -436,23 +471,23 @@ class MLPBlock(nn.Module):
         return x  
 
 
-        # 四分window
-        # num_spatial_tokens = (x.size(1) - 1) // T
-        # H = num_spatial_tokens // W
-        # x= (b t) h/p*w/p embed_dim
-        # x_windows = (b t) h/p w/p embed_dim   (b t) 14 14 768
+        # # 四分window
+        # # num_spatial_tokens = (x.size(1) - 1) // T
+        # # H = num_spatial_tokens // W
+        # # x= (b t) h/p*w/p embed_dim
+        # # x_windows = (b t) h/p w/p embed_dim   (b t) 14 14 768
         # xs = x.view(-1, wp, wp, self.dim)
         # # x_windows = (b t n) window_size window_size embed_dim    (b t 4) 7 7 768   n = h/p/window_size * w/p/window_size
-        # x_windows = window_partition(x, self.window_size)
+        # x_windows = window_partition(xs, self.window_size)
         # # x_windows = (b t n) window_size*window_size embed_dim   (b t 4) 49 768
         # x_windows = x_windows.view(-1, self.window_size * self.window_size, self.dim)
-        # attn_windows = self.drop_path(self.mpl_channel(x_windows)) # (b t 4) 49 768
+        # attn_windows = self.drop_path(self.mpl_s(x_windows)) # (b t 4) 49 768
         # attn_windows = attn_windows.view(-1,self.window_size,self.window_size,self.dim) # (b t 4) 7 7 768
-        # x_channel = window_reverse(attn_windows, self.window_size, wp, wp) # (b t) 14 14 768
-        # x_channel = x_channel.view(-1, self.window_size * self.window_size, self.dim) # # (b t) 196 768
- 
+        # x_channel = window_reverse(attn_windows, self.window_size, wp, wp) # (b t) 14 14 768   wp=14
+        # x_channel = x_channel.view(-1, wp * wp, self.dim) # # (b t) 196 768
 
-        # x_temporal = rearrange(x, '(b t) n d -> (b n) t d',b=B,t=T,d=self.dim)    # n=h1*w1  h1=h/patch_size
+        # x_temporal = rearrange(x_channel, '(b t) n d -> (b n) t d',b=B,t=T,d=self.dim)    # n=h1*w1  h1=h/patch_size
+        # # 分组
         # list_temporal = torch.split(x_temporal,self.num_patches_t,dim=1)
         # res_t = []
         # for i in list_temporal:
@@ -462,11 +497,11 @@ class MLPBlock(nn.Module):
         # # x_temporal = self.drop_path(self.mpl_t(x_temporal))
         # x_temporal = rearrange(x_temporal, '(b n) t d -> (b t) n d ',b=B,t=T,d=self.dim)
 
-        # res = torch.cat([x_spatial, x_temporal], dim=2) # bt hw m*2
-        # res = self.concate(res) # bt hw m
+        # # res = torch.cat([x_spatial, x_temporal], dim=2) # bt hw m*2
+        # # res = self.concate(res) # bt hw m
             
         # # Mlp
-        # x = x + self.drop_path(self.mlp(self.norm(res)))
+        # x = x_temporal + self.drop_path(self.mlp(self.norm(x_temporal)))
         # return x  
 
 @MODEL_REGISTRY.register()

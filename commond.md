@@ -49,9 +49,9 @@ tensorboard  --port=<port-number> --logdir result/train/tensorboard/log
 tensorboard  --port=<port-number> --logdir result/test/tensorboard/log
 tensorboard  --port=6006 --logdir result/test/tensorboard/log
 
-# 同时显示多个模型
+# 同时显示多个模型，逗号识别模型，冒号识别路径
 tensorboard --port=1111 --logdir_spec=videoformer:result/videoformer/tensorboard/log,slowfast:result/slowfast/tensorboard/log,mlp:result/mlp/tensorboard/log
-tensorboard --port=1111 --logdir_spec=videoformer:result/videoformer/tensorboard/log,slowfast:result/slowfast/tensorboard/log
+tensorboard --port=1111 --logdir_spec=videoformer:result/videoformer/tensorboard/log,slowfast:result/slowfast/tensorboard/log,mlp:result/mlp/tensorboard/log,C2D:result/C2D/tensorboard/log,I3D:result/I3D/tensorboard/log
 # 显示直方图
 tensorboard  --port=6006 --logdir result/test/tensorboard/log  --load_fast false
 

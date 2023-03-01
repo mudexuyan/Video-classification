@@ -5,8 +5,15 @@ import pickle
 
 # model = TimeSformer(img_size=224, num_classes=100, num_frames=16, attention_type='divided_space_time',
 #                     pretrained_model='TimeSformer_divST_8x32_224_K400.pyth')
+# model = TimeSformer(img_size=224, num_classes=100, num_frames=16, attention_type='divided_space_time')
 
 # dummy_video = torch.randn(2, 3, 8, 224, 224) # (batch x channels x frames x height x width)
+
+# writer = SummaryWriter("result/tensorboard")
+# writer.add_graph(model,dummy_video)
+# # tensorboard  --port=6006 --logdir result/tensorboard/
+
+# writer.close()
 
 # # pred = model(dummy_video,) # (2, 400)
 
@@ -44,11 +51,6 @@ import pickle
 
 # print(torch.cuda.is_available())
 
-# 预测结果
-# import pickle
-# with open('result/test/pred_label.txt', 'rb') as f:
-#     data = pickle.load(f)
-# print(data) 
 
 
 # model = TimeSformer(img_size=224, num_classes=10, num_frames=8, attention_type='divided_space_time',
@@ -80,21 +82,21 @@ import pickle
 # print(out)
 # print(out.shape)
 
-x = torch.randn(2,3)
-print(x)
-# 返回每行的最大数
-y = torch.max(x,1)[0]
-print(y)
-# 返回每行最大数的索引
-y1 = torch.max(x,1)[1]
-print(y1)
+# x = torch.randn(2,3)
+# print(x)
+# # 返回每行的最大数
+# y = torch.max(x,1)[0]
+# print(y)
+# # 返回每行最大数的索引
+# y1 = torch.max(x,1)[1]
+# print(y1)
 
-pic = open(r'pickle.txt','wb')
-pickle.dump(y1,pic)
-pic.close()
+# pic = open(r'pickle.txt','wb')
+# pickle.dump(y1,pic)
+# pic.close()
 
-pic = open(r'pickle.txt','rb')
-data = pickle.load(pic)
-print(data)
+# pic = open(r'pickle.txt','rb')
+# data = pickle.load(pic)
+# print(data)
 
 

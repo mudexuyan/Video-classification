@@ -20,37 +20,43 @@ testList = []
 valList = []
 
 # 遍历输出每一个文件的名字和类型
-for file in fileList:
-    # 是文件则略过
-    if os.path.isfile(filePath+file):
-        continue
+# for file in fileList:
+#     # 是文件则略过
+#     if os.path.isfile(filePath+file):
+#         continue
 
-    # 输出指定后缀类型的文件
-    tmp = []
-    subFileList = os.listdir(filePath + file)
-    if (file == '驾驶手势数据'):
-        continue
-    for subFile in subFileList:
-        tmp.append(filePath + file + '/' + subFile + ' ' + str(index))
-    # "\"straight\"": 0,
-    class_name["\\"+file+"\\"]=index
-    tmp = []
-    tmp.append(file)
-    parent_child[file]=tmp
-    subset.append(file)
-    index = index + 1
+#     # 输出指定后缀类型的文件
+#     tmp = []
+#     subFileList = os.listdir(filePath + file)
+#     if (file == '驾驶手势数据'):
+#         continue
+#     for subFile in subFileList:
+#         tmp.append(filePath + file + '/' + subFile + ' ' + str(index))
+#     # "\"straight\"": 0,
+#     class_name["\\"+file+"\\"]=index
+#     tmp = []
+#     tmp.append(file)
+#     parent_child[file]=tmp
+#     subset.append(file)
+#     index = index + 1
 
-    testTemp = random.sample(tmp, int(0.2*len(tmp)))
-    train_val = [x for x in tmp if x not in testTemp]
-    trainTemp = random.sample(train_val, int(0.8*len(train_val)))
-    valTemp = [x for x in train_val if x not in trainTemp]
+#     testTemp = random.sample(tmp, int(0.2*len(tmp)))
+#     train_val = [x for x in tmp if x not in testTemp]
+#     trainTemp = random.sample(train_val, int(0.8*len(train_val)))
+#     valTemp = [x for x in train_val if x not in trainTemp]
     
-    trainList.extend(trainTemp)
-    testList.extend(testTemp)
-    valList.extend(valTemp)
+#     trainList.extend(trainTemp)
+#     testList.extend(testTemp)
+#     valList.extend(valTemp)
 
 # print(class_name)
-print(parent_child)
+# print(parent_child)
+
+# print(7172+2216+1836)
+# print(7172/11224)
+# print(1836/11224)
+
+# print(2216/11224)
 
 # print(subset)
 
@@ -77,3 +83,30 @@ print(parent_child)
 #     for row in valList:
 #         csvfile.write(row)
 #         csvfile.write('\n')
+
+for file in fileList:
+#     # 是文件则略过
+    if os.path.isfile(filePath+file):
+        continue
+
+    # 输出指定后缀类型的文件
+    tmp = []
+    subFileList = os.listdir(filePath + file)
+    for subFile in subFileList:
+        tmp.append(filePath + file + '/' + subFile + ' ' + str(index))
+    # "\"straight\"": 0,
+    class_name["\\"+file+"\\"]=index
+    tmp = []
+    tmp.append(file)
+    parent_child[file]=tmp
+    subset.append(file)
+    index = index + 1
+
+    testTemp = random.sample(tmp, int(0.2*len(tmp)))
+    train_val = [x for x in tmp if x not in testTemp]
+    trainTemp = random.sample(train_val, int(0.8*len(train_val)))
+    valTemp = [x for x in train_val if x not in trainTemp]
+    
+    trainList.extend(trainTemp)
+    testList.extend(testTemp)
+    valList.extend(valTemp)
