@@ -147,3 +147,9 @@ Date:   Sun May 8 14:08:25 2022 +0800
 ## 查看分支
 1. git branch -a，所有分支
 2. git branch -vv 本地分支和远程分支对应情况
+
+
+
+## 报错 
+1. RuntimeError: Expected to have finished reduction in the prior iteration before starting a new one. This error indicates that your module has parameters that were not used in producing loss. You can enable unused parameter detection by passing the keyword argument `find_unused_parameters=True` to `torch.nn.parallel.DistributedDataParallel`, and by 
+2. 原因: 存在定义的函数未使用

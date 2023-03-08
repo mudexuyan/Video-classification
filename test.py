@@ -98,5 +98,7 @@ import pickle
 # pic = open(r'pickle.txt','rb')
 # data = pickle.load(pic)
 # print(data)
-
+x = torch.ones(2,3,4)
+y = torch.ones(1,3,4)
+print(x+y)
 

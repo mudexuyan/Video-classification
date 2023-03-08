@@ -19,7 +19,7 @@ from torch import einsum
 from einops import rearrange, reduce, repeat
 
 # 修改mlp
-from timesformer.models.MLPMixer.mlp_mixer import MLPMixer
+from timesformer.models.MLPMixer.mlp_mixer import MLPMixer,Mixer
 
 
 def _cfg(url='', **kwargs):
@@ -581,7 +581,7 @@ class MLPMixerModel(nn.Module):
         super(MLPMixerModel, self).__init__()
         self.pretrained=True
         patch_size = 16
-        self.model = MLPMixerBase(img_size=cfg.DATA.TRAIN_CROP_SIZE, num_classes=cfg.MODEL.NUM_CLASSES, patch_size=patch_size, embed_dim=768, depth=4, num_heads=12, mlp_ratio=4, mlp_ratio_token=0.5,qkv_bias=True, norm_layer=partial(nn.LayerNorm, eps=1e-6), drop_rate=0., attn_drop_rate=0., drop_path_rate=0.1, num_frames=cfg.DATA.NUM_FRAMES, **kwargs)
+        self.model = MLPMixerBase(img_size=cfg.DATA.TRAIN_CROP_SIZE, num_classes=cfg.MODEL.NUM_CLASSES, patch_size=patch_size, embed_dim=768, depth=8, num_heads=12, mlp_ratio=4, mlp_ratio_token=0.5,qkv_bias=True, norm_layer=partial(nn.LayerNorm, eps=1e-6), drop_rate=0., attn_drop_rate=0., drop_path_rate=0.1, num_frames=cfg.DATA.NUM_FRAMES, **kwargs)
 
         self.model.default_cfg = default_cfgs['vit_base_patch16_224']
         self.num_patches = (cfg.DATA.TRAIN_CROP_SIZE // patch_size) * (cfg.DATA.TRAIN_CROP_SIZE // patch_size)
@@ -926,3 +926,44 @@ class VideoTransformerModel(nn.Module):
     def forward(self, x):
         x = self.model(x)
         return x
+
+
+
+class MLPBlock2(nn.Module):
+
+    def __init__(self, dim, num_heads, mlp_ratio=4., qkv_bias=False, qk_scale=None, drop=0., attn_drop=0.,
+                 drop_path=0.1, act_layer=nn.GELU, norm_layer=nn.LayerNorm):
+        super().__init__()
+
+        ## drop path
+        self.drop_path = DropPath(drop_path) if drop_path > 0. else nn.Identity()
+        self.norm = norm_layer(dim)
+        self.dim=dim
+        self.window_size = 7
+        self.num_patches_t = 4
+        self.T = 8
+        self.N = 196
+        mlp_hidden_dim = int(dim * mlp_ratio)
+        # self.mlp = Mlp(in_features=dim, hidden_features=mlp_hidden_dim, act_layer=act_layer, drop=drop)
+        # self.mpl_s = MLPMixer(
+        #     image_size = 224,
+        #     channels = 3,
+        #     num_patches = self.window_size*self.window_size,
+        #     dim = dim,
+        # )
+        # self.mpl_t = MLPMixer(
+        #     image_size = 224,
+        #     channels = 3,
+        #     num_patches = self.num_patches_t,  # 区别与 空间信息，时间信息分组
+        #     dim = dim,
+        # )
+        self.mlp = Mixer(T = self.T, num_patches = self.N, dim = dim, depth=4)    
+
+
+    def forward(self, x, B, T, wp):
+        
+        # Mlp
+        return x + self.drop_path(self.mlp(self.norm(x)))
+
+
+       
