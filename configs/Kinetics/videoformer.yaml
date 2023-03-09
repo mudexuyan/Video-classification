@@ -1,7 +1,7 @@
 TRAIN:
   ENABLE: True
   DATASET: kinetics
-  BATCH_SIZE: 16
+  BATCH_SIZE: 8
   EVAL_PERIOD: 5
   CHECKPOINT_PERIOD: 5
   AUTO_RESUME: True
@@ -33,10 +33,10 @@ MODEL:
 TEST:
   ENABLE: True
   DATASET: kinetics
-  BATCH_SIZE: 16
+  BATCH_SIZE: 8
   NUM_ENSEMBLE_VIEWS: 1
   NUM_SPATIAL_CROPS: 3
-  SAVE_RESULTS_PATH: test_result
+  # SAVE_RESULTS_PATH: test_result
 DATA_LOADER:
   NUM_WORKERS: 2
   PIN_MEMORY: True
@@ -64,4 +64,4 @@ TENSORBOARD:
     # Path to txt file contains class names separated by newline characters.
                  # Only classes in this file will be visualized with histograms.
 
-OUTPUT_DIR: result/videoformer2/
+OUTPUT_DIR: result/videoformer8/

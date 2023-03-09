@@ -1,66 +1,87 @@
 TRAIN:
-  ENABLE: True
+  ENABLE: False
   DATASET: kinetics
-  BATCH_SIZE: 8
-  EVAL_PERIOD: 2
-  CHECKPOINT_PERIOD: 2
+  BATCH_SIZE: 1
+  EVAL_PERIOD: 10
+  CHECKPOINT_PERIOD: 5
   AUTO_RESUME: True
 DATA:
-  PATH_TO_DATA_DIR: ../DataSet/
+  PATH_TO_DATA_DIR: ../TestData/
   NUM_FRAMES: 8
   SAMPLING_RATE: 32
   TRAIN_JITTER_SCALES: [256, 320]
   TRAIN_CROP_SIZE: 224
   TEST_CROP_SIZE: 224
   INPUT_CHANNEL_NUM: [3]
-TIMESFORMER:
-  ATTENTION_TYPE: 'divided_space_time'
+
 SOLVER:
-  BASE_LR: 0.005
+  BASE_LR: 0.05
   LR_POLICY: steps_with_relative_lrs
-  STEPS: [0, 11, 14]
-  LRS: [1, 0.1, 0.01]
-  MAX_EPOCH: 2 #接着训练，在此基础上加上训练的轮数，上一次训练了10次，如果再训练5次，调整为15
+  STEPS: [0, 18, 25, 50, 60, 80]
+  LRS: [1 ,0.6 ,0.2, 0.01, 0.06, 0.02]
+  MAX_EPOCH: 120 #接着训练，在此基础上加上训练的轮数，上一次训练了10次，如果再训练5次，调整为15
   MOMENTUM: 0.9
   WEIGHT_DECAY: 1e-4
   OPTIMIZING_METHOD: sgd
 MODEL:
-  MODEL_NAME: TestModel
-  NUM_CLASSES: 10
+  MODEL_NAME: MLPMixerModel
+  NUM_CLASSES: 94
   ARCH: vit
   LOSS_FUNC: cross_entropy
   DROPOUT_RATE: 0.5
 TEST:
   ENABLE: True
   DATASET: kinetics
-  BATCH_SIZE: 4
+  BATCH_SIZE: 1
   NUM_ENSEMBLE_VIEWS: 1
   NUM_SPATIAL_CROPS: 3
+  CHECKPOINT_FILE_PATH: result/mixing04/checkpoints/checkpoint_epoch_00070.pyth
+  SAVE_RESULTS_PATH: test_result
 DATA_LOADER:
-  NUM_WORKERS: 2
+  NUM_WORKERS: 1
   PIN_MEMORY: True
-NUM_GPUS: 2
+
+DEMO:
+  ENABLE: True
+  LABEL_FILE_PATH:     # Path to json file providing class_name - id mapping.
+  INPUT_VIDEO: ../TestData/talk_DCX_01.mp4 # Path to input video file.
+  OUTPUT_FILE: # Path to output video file to write results to.
+               # Leave an empty string if you would like to display results to a window.
+  THREAD_ENABLE: # Run video reader/writer in the background with multi-threading.
+  NUM_VIS_INSTANCES: # Number of CPU(s)/processes use to run video visualizer.
+  NUM_CLIPS_SKIP: # Number of clips to skip prediction/visualization
+                  # (mostly to smoothen/improve display quality with wecam input).
+DEMO:
+  ENABLE: True
+  OUTPUT_FILE: yourPath/output.mp4
+  LABEL_FILE_PATH:  yourPath/ava_classnames.json
+  INPUT_VIDEO: yourPath/frames/HVAmkvLrthQ  # Path to a video file or image folder
+  PREDS_BOXES: yourPath/ava_detection_train_boxes_and_labels_include_negative.csv # Path to pre-computed bouding boxes in AVA format.
+  GT_BOXES: yourPath/ava_train_v2.2.csv # Path to ground-truth boxes and labels in AVA format (optional).
+
+NUM_GPUS: 1
 NUM_SHARDS: 1
-RNG_SEED: 0
+RNG_SEED: 3407
 
 TENSORBOARD:
   ENABLE: True
   LOG_DIR: tensorboard/log
   # Leave empty to use cfg.OUTPUT_DIR/runs-{cfg.TRAIN.DATASET} as path.
-  CLASS_NAMES_PATH: tensorboard/class_name_new.json
+  CLASS_NAMES_PATH: tensorboard/class_name_last.json
   # Path to json file providing class_name - id mapping.
-  CATEGORIES_PATH: tensorboard/parent_child_new.json
+  CATEGORIES_PATH: tensorboard/parent_child_last.json
   CONFUSION_MATRIX:
     ENABLE: True
-    SUBSET_PATH: tensorboard/subset.txt
+    SUBSET_PATH: tensorboard/subset_last.txt
     # Path to txt file contains class names separated by newline characters.
                  # Only classes in this file will be visualized in the confusion matrix.
   HISTOGRAM:
     ENABLE: True
     TOPK: 5   
     # Top-k most frequently predicted classes for each class in the dataset.
-    SUBSET_PATH: tensorboard/subset.txt
+    SUBSET_PATH: tensorboard/subset_last.txt
     # Path to txt file contains class names separated by newline characters.
                  # Only classes in this file will be visualized with histograms.
 
-OUTPUT_DIR: result/testModel/train/
+
+OUTPUT_DIR: result/test/
