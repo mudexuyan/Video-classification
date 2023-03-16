@@ -21,7 +21,7 @@ class index:
         return index_text
     # 172.16.227.68:8080/model?name=aaa&age=12 获取到aaa12
 class model:
-    def GET(self):
+    def POST(self):
         i = web.input(name=None)
         j = web.input(age=None)
         return i.name+j.age

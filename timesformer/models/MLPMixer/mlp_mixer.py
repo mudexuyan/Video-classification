@@ -99,6 +99,7 @@ class MixerBase(nn.Module):
         # x_t = rearrange(x_t, '(b n) d t -> (b t) n d',n=self.N,t=self.T,d=self.dim)
         # # channel
         # return self.fn_c(self.norm_c(x_t)) + x_t
+
         # 并行结构
         x_s = x.transpose(1,2)
         x_s = self.fn_s(self.norm_s(x_s)) + x_s
@@ -120,5 +121,52 @@ def Mixer(*, T, num_patches, dim, depth=4, expansion_factor = 4, expansion_facto
     return nn.Sequential(
         *[nn.Sequential(
             MixerBase(T, num_patches, dim, dropout)
+        ) for _ in range(depth)],
+    )
+
+
+class MixerEncoderBase(nn.Module):
+    def __init__(self,T,N,dim,dropout,type):
+        super().__init__()
+        self.type = type
+        self.T = T
+        self.N = N
+        self.dim = dim
+        if self.type == 'space':
+            self.norm_s = nn.LayerNorm(N)
+            self.expansion_factor_s = 4
+            self.fn_s = FeedForward(N,self.expansion_factor_s,dropout)
+        if self.type == 'time':
+            self.norm_t = nn.LayerNorm(T)
+            self.expansion_factor_t = 2
+            self.fn_t = FeedForward(T,self.expansion_factor_t,dropout)
+        if self.type == 'channel': 
+            self.norm_c = nn.LayerNorm(dim)
+            self.expansion_factor_c = 0.5
+            self.fn_c = FeedForward(dim,self.expansion_factor_c,dropout)
+
+    def forward(self, x):
+        # x: (b t) h/p*w/p embed_dim
+        if self.type == 'space':
+            x_s = x.transpose(1,2)
+            x_s = self.fn_s(self.norm_s(x_s)) + x_s
+            res = rearrange(x_s, '(b t) d n -> (b t) n d ',n=self.N,t=self.T,d=self.dim)
+        if self.type == 'time':
+            x_t = rearrange(x, '(b t) n d -> (b n) d t',n=self.N,t=self.T,d=self.dim)
+            x_t = self.fn_t(self.norm_t(x_t)) + x_t
+            res = rearrange(x_t, '(b n) d t -> (b t) n d',n=self.N,t=self.T,d=self.dim)
+        if self.type == 'channel': 
+            res = self.fn_c(self.norm_c(x)) + x
+            # res = rearrange(x_c, '(b t) n d -> b t n d ',n=self.N,t=self.T,d=self.dim)
+        return res
+
+
+def MixerEncoder(*, T, num_patches, dim, depth=4, expansion_factor = 4, expansion_factor_token = 0.5, dropout = 0.):
+ 
+    return nn.Sequential(
+        *[nn.Sequential(
+            MixerEncoderBase(T, num_patches, dim, dropout,'space'),
+            MixerEncoderBase(T, num_patches, dim, dropout,'channel'),
+            MixerEncoderBase(T, num_patches, dim, dropout,'time')
         ) for _ in range(depth)],
     )

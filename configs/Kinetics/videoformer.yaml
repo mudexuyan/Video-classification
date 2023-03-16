@@ -64,4 +64,4 @@ TENSORBOARD:
     # Path to txt file contains class names separated by newline characters.
                  # Only classes in this file will be visualized with histograms.
 
-OUTPUT_DIR: result/videoformer8/
+OUTPUT_DIR: result/videoformer6/

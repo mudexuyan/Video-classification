@@ -17,9 +17,9 @@ DATA:
 SOLVER:
   BASE_LR: 0.05
   LR_POLICY: steps_with_relative_lrs
-  STEPS: [0, 18, 25, 50, 60, 120]
+  STEPS: [0, 18, 25, 50, 60, 80]
   LRS: [1 ,0.6 ,0.2, 0.01, 0.06, 0.02]
-  MAX_EPOCH: 200 #接着训练，在此基础上加上训练的轮数，上一次训练了10次，如果再训练5次，调整为15
+  MAX_EPOCH: 100 #接着训练，在此基础上加上训练的轮数，上一次训练了10次，如果再训练5次，调整为15
   MOMENTUM: 0.9
   WEIGHT_DECAY: 1e-4
   OPTIMIZING_METHOD: sgd
@@ -35,9 +35,6 @@ TEST:
   BATCH_SIZE: 32
   NUM_ENSEMBLE_VIEWS: 1
   NUM_SPATIAL_CROPS: 3
-  CHECKPOINT_TYPE: "pytorch"
-  CHECKPOINT_FILE_PATH: result/mlp/checkpoints/checkpoint_epoch_00175.pyth
-
 DATA_LOADER:
   NUM_WORKERS: 2
   PIN_MEMORY: True
@@ -66,4 +63,4 @@ TENSORBOARD:
                  # Only classes in this file will be visualized with histograms.
 
 
-OUTPUT_DIR: result/mlp/test
+OUTPUT_DIR: result/mlp_2_depth2_mix4/

@@ -19,7 +19,7 @@ from torch import einsum
 from einops import rearrange, reduce, repeat
 
 # 修改mlp
-from timesformer.models.MLPMixer.mlp_mixer import MLPMixer,Mixer
+from timesformer.models.MLPMixer.mlp_mixer import MLPMixer,Mixer,MixerEncoder
 
 
 def _cfg(url='', **kwargs):
@@ -127,53 +127,14 @@ class Block(nn.Module):
             x = x + self.drop_path(self.mlp(self.norm2(x)))
             return x
         elif self.attention_type == 'divided_space_time':
-            # ## Temporal
-            # # x= b (1+d*d*t) m
-            # xt = x[:,1:,:]
-            # xt = rearrange(xt, 'b (h w t) m -> (b h w) t m',b=B,h=H,w=W,t=T)
-            # res_temporal = self.drop_path(self.temporal_attn(self.temporal_norm1(xt)))
-            # res_temporal = rearrange(res_temporal, '(b h w) t m -> b (h w t) m',b=B,h=H,w=W,t=T)
-            # res_temporal = self.temporal_fc(res_temporal)
-            # # xt = x[:,1:,:] + res_temporal
-
-            # ## Spatial
-            # ## Temporal atten里的input没有pos_embed
-            # ## spatial atten里的input有pos_embed
-            # init_cls_token = x[:,0,:].unsqueeze(1)
-            # cls_token = init_cls_token.repeat(1, T, 1)
-            # cls_token = rearrange(cls_token, 'b t m -> (b t) m',b=B,t=T).unsqueeze(1)
-
-            # # xs = xt
-            # xs = x[:,1:,:]
-            # xs = rearrange(xs, 'b (h w t) m -> (b t) (h w) m',b=B,h=H,w=W,t=T)
-            # xs = torch.cat((cls_token, xs), 1)
-            # res_spatial = self.drop_path(self.attn(self.norm1(xs)))
-
-            # ### Taking care of CLS token
-            # cls_token = res_spatial[:,0,:]
-            # cls_token = rearrange(cls_token, '(b t) m -> b t m',b=B,t=T)
-            # cls_token = torch.mean(cls_token,1,True) ## averaging for every frame
-
-            # res_spatial = res_spatial[:,1:,:]
-            # res_spatial = rearrange(res_spatial, '(b t) (h w) m -> b (h w t) m',b=B,h=H,w=W,t=T)
-            # res_spatial = self.spatial_fc(res_spatial)
-            
-            # # fuse
-            # res = torch.cat([res_spatial, res_temporal], dim=2) # b (h w t) m*2
-            # res = self.concate(res) # b (h w t) m
-            
-            # ## Mlp
-            # x = x + torch.cat((cls_token, res), 1)
-            # x = x + self.drop_path(self.mlp(self.norm2(x)))
-            # return x
-              ## Temporal
+            ## Temporal
             # x= b (1+d*d*t) m
             xt = x[:,1:,:]
             xt = rearrange(xt, 'b (h w t) m -> (b h w) t m',b=B,h=H,w=W,t=T)
             res_temporal = self.drop_path(self.temporal_attn(self.temporal_norm1(xt)))
             res_temporal = rearrange(res_temporal, '(b h w) t m -> b (h w t) m',b=B,h=H,w=W,t=T)
             res_temporal = self.temporal_fc(res_temporal)
-            xt = x[:,1:,:] + res_temporal
+            # xt = x[:,1:,:] + res_temporal
 
             ## Spatial
             ## Temporal atten里的input没有pos_embed
@@ -182,7 +143,8 @@ class Block(nn.Module):
             cls_token = init_cls_token.repeat(1, T, 1)
             cls_token = rearrange(cls_token, 'b t m -> (b t) m',b=B,t=T).unsqueeze(1)
 
-            xs = xt
+            # xs = xt
+            xs = x[:,1:,:]
             xs = rearrange(xs, 'b (h w t) m -> (b t) (h w) m',b=B,h=H,w=W,t=T)
             xs = torch.cat((cls_token, xs), 1)
             res_spatial = self.drop_path(self.attn(self.norm1(xs)))
@@ -194,13 +156,51 @@ class Block(nn.Module):
 
             res_spatial = res_spatial[:,1:,:]
             res_spatial = rearrange(res_spatial, '(b t) (h w) m -> b (h w t) m',b=B,h=H,w=W,t=T)
-            res = res_spatial
-            x = xt
+            res_spatial = self.spatial_fc(res_spatial)
+            
+            # fuse
+            res = torch.cat([res_spatial, res_temporal], dim=2) # b (h w t) m*2
+            res = self.concate(res) # b (h w t) m
             
             ## Mlp
-            x = torch.cat((init_cls_token, x), 1) + torch.cat((cls_token, res), 1)
+            x = x + torch.cat((cls_token, res), 1)
             x = x + self.drop_path(self.mlp(self.norm2(x)))
             return x
+              ## Temporal
+            # x= b (1+d*d*t) m
+            # xt = x[:,1:,:]
+            # xt = rearrange(xt, 'b (h w t) m -> (b h w) t m',b=B,h=H,w=W,t=T)
+            # res_temporal = self.drop_path(self.temporal_attn(self.temporal_norm1(xt)))
+            # res_temporal = rearrange(res_temporal, '(b h w) t m -> b (h w t) m',b=B,h=H,w=W,t=T)
+            # res_temporal = self.temporal_fc(res_temporal)
+            # xt = x[:,1:,:] + res_temporal
+
+            # ## Spatial
+            # ## Temporal atten里的input没有pos_embed
+            # ## spatial atten里的input有pos_embed
+            # init_cls_token = x[:,0,:].unsqueeze(1)
+            # cls_token = init_cls_token.repeat(1, T, 1)
+            # cls_token = rearrange(cls_token, 'b t m -> (b t) m',b=B,t=T).unsqueeze(1)
+
+            # xs = xt
+            # xs = rearrange(xs, 'b (h w t) m -> (b t) (h w) m',b=B,h=H,w=W,t=T)
+            # xs = torch.cat((cls_token, xs), 1)
+            # res_spatial = self.drop_path(self.attn(self.norm1(xs)))
+
+            # ### Taking care of CLS token
+            # cls_token = res_spatial[:,0,:]
+            # cls_token = rearrange(cls_token, '(b t) m -> b t m',b=B,t=T)
+            # cls_token = torch.mean(cls_token,1,True) ## averaging for every frame
+
+            # res_spatial = res_spatial[:,1:,:]
+            # res_spatial = rearrange(res_spatial, '(b t) (h w) m -> b (h w t) m',b=B,h=H,w=W,t=T)
+            # res = res_spatial
+            # x = xt
+            
+            # ## Mlp
+            # x = torch.cat((init_cls_token, x), 1) + torch.cat((cls_token, res), 1)
+            # x = x + self.drop_path(self.mlp(self.norm2(x)))
+            # return x
 
 
 class PatchEmbed(nn.Module):
@@ -506,7 +506,7 @@ class MLPBlock(nn.Module):
 
 @MODEL_REGISTRY.register()
 class MLPMixerBase(nn.Module):
-    def __init__(self, img_size=224, patch_size=16, in_chans=3, num_classes=1000, embed_dim=768, depth=1,
+    def __init__(self, img_size=224, patch_size=16, in_chans=3, num_classes=1000, embed_dim=768, depth=4,
                  num_heads=12, mlp_ratio=2., mlp_ratio_token=0.5, qkv_bias=False, qk_scale=None, drop_rate=0., attn_drop_rate=0.,
                  drop_path_rate=0.1, hybrid_backbone=None, norm_layer=nn.LayerNorm, num_frames=8, dropout=0.):
         super(MLPMixerBase, self).__init__()
@@ -524,7 +524,7 @@ class MLPMixerBase(nn.Module):
         dpr = [x.item() for x in torch.linspace(0, drop_path_rate, self.depth)]  # stochastic depth decay rule
     
         self.blocks = nn.ModuleList([
-            MLPBlock(
+            MLPBlock2(
                 dim=embed_dim, num_heads=num_heads, mlp_ratio=mlp_ratio, qkv_bias=qkv_bias, qk_scale=qk_scale,
                 drop=drop_rate, attn_drop=attn_drop_rate, drop_path=dpr[i], norm_layer=norm_layer)
             for i in range(self.depth)])
@@ -581,7 +581,7 @@ class MLPMixerModel(nn.Module):
         super(MLPMixerModel, self).__init__()
         self.pretrained=True
         patch_size = 16
-        self.model = MLPMixerBase(img_size=cfg.DATA.TRAIN_CROP_SIZE, num_classes=cfg.MODEL.NUM_CLASSES, patch_size=patch_size, embed_dim=768, depth=8, num_heads=12, mlp_ratio=4, mlp_ratio_token=0.5,qkv_bias=True, norm_layer=partial(nn.LayerNorm, eps=1e-6), drop_rate=0., attn_drop_rate=0., drop_path_rate=0.1, num_frames=cfg.DATA.NUM_FRAMES, **kwargs)
+        self.model = MLPMixerBase(img_size=cfg.DATA.TRAIN_CROP_SIZE, num_classes=cfg.MODEL.NUM_CLASSES, patch_size=patch_size, embed_dim=768, depth=4, num_heads=12, mlp_ratio=4, mlp_ratio_token=0.5,qkv_bias=True, norm_layer=partial(nn.LayerNorm, eps=1e-6), drop_rate=0., attn_drop_rate=0., drop_path_rate=0.1, num_frames=cfg.DATA.NUM_FRAMES, **kwargs)
 
         self.model.default_cfg = default_cfgs['vit_base_patch16_224']
         self.num_patches = (cfg.DATA.TRAIN_CROP_SIZE // patch_size) * (cfg.DATA.TRAIN_CROP_SIZE // patch_size)
@@ -898,7 +898,7 @@ class VideoTransformerBase(nn.Module):
         super(VideoTransformerBase, self).__init__()
         self.pretrained=True
         patch_size = 16
-        self.model = VideoTransformer(img_size=cfg.DATA.TRAIN_CROP_SIZE, num_classes=cfg.MODEL.NUM_CLASSES, patch_size=patch_size, embed_dim=768, depth=8, num_heads=12, mlp_ratio=4, qkv_bias=True, norm_layer=partial(nn.LayerNorm, eps=1e-6), drop_rate=0., attn_drop_rate=0., drop_path_rate=0.1, num_frames=cfg.DATA.NUM_FRAMES, attention_type=cfg.TIMESFORMER.ATTENTION_TYPE, **kwargs)
+        self.model = VideoTransformer(img_size=cfg.DATA.TRAIN_CROP_SIZE, num_classes=cfg.MODEL.NUM_CLASSES, patch_size=patch_size, embed_dim=768, depth=6, num_heads=12, mlp_ratio=4, qkv_bias=True, norm_layer=partial(nn.LayerNorm, eps=1e-6), drop_rate=0., attn_drop_rate=0., drop_path_rate=0.1, num_frames=cfg.DATA.NUM_FRAMES, attention_type=cfg.TIMESFORMER.ATTENTION_TYPE, **kwargs)
 
         self.attention_type = cfg.TIMESFORMER.ATTENTION_TYPE
         self.model.default_cfg = default_cfgs['vit_base_patch16_224']
@@ -957,7 +957,8 @@ class MLPBlock2(nn.Module):
         #     num_patches = self.num_patches_t,  # 区别与 空间信息，时间信息分组
         #     dim = dim,
         # )
-        self.mlp = Mixer(T = self.T, num_patches = self.N, dim = dim, depth=4)    
+        # self.mlp = Mixer(T = self.T, num_patches = self.N, dim = dim, depth=4)    
+        self.mlp = MixerEncoder(T = self.T, num_patches = self.N, dim = dim, depth=4)    
 
 
     def forward(self, x, B, T, wp):
@@ -965,5 +966,24 @@ class MLPBlock2(nn.Module):
         # Mlp
         return x + self.drop_path(self.mlp(self.norm(x)))
 
+@MODEL_REGISTRY.register()
+class MLPTest(nn.Module):
+    def __init__(self,  pretrained_model='', **kwargs):
+        super(MLPTest, self).__init__()
+        self.pretrained=True
+        img_size = 224
+        patch_size = 16
+        self.num_patches = (img_size // patch_size) * (img_size // patch_size)
+        self.model = MLPMixerBase(img_size=224, num_classes=94, patch_size=16, embed_dim=768, depth=4, num_heads=12, mlp_ratio=4, mlp_ratio_token=0.5,qkv_bias=True, norm_layer=partial(nn.LayerNorm, eps=1e-6), drop_rate=0., attn_drop_rate=0., drop_path_rate=0.1, num_frames=8, **kwargs)
 
-       
+        self.model.default_cfg = default_cfgs['vit_base_patch16_224']
+        # pretrained_model=cfg.TIMESFORMER.PRETRAINED_MODEL
+        checkpoint = torch.load(pretrained_model)
+        self.model.load_state_dict(checkpoint)
+        # if self.pretrained:
+        #     load_pretrained(self.model, num_classes=94, in_chans=kwargs.get('in_chans', 3), filter_fn=_conv_filter, img_size=224, num_patches=self.num_patches, pretrained_model=pretrained_model)
+
+    def forward(self, x):
+
+        x = self.model(x)
+        return x

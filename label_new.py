@@ -84,6 +84,7 @@ valList = []
 #         csvfile.write(row)
 #         csvfile.write('\n')
 
+category = []
 for file in fileList:
 #     # 是文件则略过
     if os.path.isfile(filePath+file):
@@ -101,12 +102,16 @@ for file in fileList:
     parent_child[file]=tmp
     subset.append(file)
     index = index + 1
+    category.append(file)
 
-    testTemp = random.sample(tmp, int(0.2*len(tmp)))
-    train_val = [x for x in tmp if x not in testTemp]
-    trainTemp = random.sample(train_val, int(0.8*len(train_val)))
-    valTemp = [x for x in train_val if x not in trainTemp]
+    # testTemp = random.sample(tmp, int(0.2*len(tmp)))
+    # train_val = [x for x in tmp if x not in testTemp]
+    # trainTemp = random.sample(train_val, int(0.8*len(train_val)))
+    # valTemp = [x for x in train_val if x not in trainTemp]
     
-    trainList.extend(trainTemp)
-    testList.extend(testTemp)
-    valList.extend(valTemp)
+    # trainList.extend(trainTemp)
+    # testList.extend(testTemp)
+    # valList.extend(valTemp)
+
+print(category)
+print(len(category))
