@@ -1,0 +1,87 @@
+TRAIN:
+  ENABLE: False
+  DATASET: kinetics
+  BATCH_SIZE: 8
+  EVAL_PERIOD: 10
+  CHECKPOINT_PERIOD: 5
+  AUTO_RESUME: True
+DATA:
+  PATH_TO_DATA_DIR: ../DataSet/
+  # PATH_TO_DATA_DIR: ../TestData/
+  NUM_FRAMES: 8
+  SAMPLING_RATE: 32
+  TRAIN_JITTER_SCALES: [256, 320]
+  TRAIN_CROP_SIZE: 224
+  TEST_CROP_SIZE: 224
+  INPUT_CHANNEL_NUM: [3]
+TIMESFORMER:
+  ATTENTION_TYPE: 'divided_space_time'
+SOLVER:
+  BASE_LR: 0.005
+  LR_POLICY: steps_with_relative_lrs
+  STEPS: [0, 11, 14]
+  LRS: [1, 0.1, 0.01]
+  MAX_EPOCH: 30
+  MOMENTUM: 0.9
+  WEIGHT_DECAY: 1e-4
+  OPTIMIZING_METHOD: sgd
+MODEL:
+  MODEL_NAME: vit_base_patch16_224
+  NUM_CLASSES: 10
+  ARCH: vit
+  LOSS_FUNC: cross_entropy
+  DROPOUT_RATE: 0.5
+TEST:
+  ENABLE: True
+  DATASET: kinetics
+  BATCH_SIZE: 8
+  NUM_ENSEMBLE_VIEWS: 1
+  NUM_SPATIAL_CROPS: 1
+DATA_LOADER:
+  NUM_WORKERS: 2
+  PIN_MEMORY: True
+NUM_GPUS: 2
+NUM_SHARDS: 1
+RNG_SEED: 3407
+
+TENSORBOARD:
+  ENABLE: True
+  CLASS_NAMES_PATH: tensorboard/class_name_new.json
+  CATEGORIES_PATH: tensorboard/parent_child_new.json
+  MODEL_VIS:
+    ENABLE: False
+    MODEL_WEIGHTS: False # Set to True to visualize model weights.
+    ACTIVATIONS: False # Set to True to visualize feature maps.
+    INPUT_VIDEO: false
+    # Set to True to visualize the input video(s) for the corresponding feature maps.
+    LAYER_LIST: ['model/blocks/7/mlp'] # List of layer names to visualize weights and activations for.['s5/pathway1_res2', 's5/pathway0_res2'] \['model/blocks/11','model/blocks/11']
+    GRAD_CAM:
+      ENABLE: True
+      LAYER_LIST: ['model/blocks/7/mlp']
+      # List of CNN layers to use for Grad-CAM visualization method.
+                  # The number of layer must be equal to the number of pathway(s).
+      # ['s1/pathway0_stem', 's1/pathway1_stem']  ['s2/pathway0_res2', 's2/pathway1_res2']   
+      # ['s3/pathway0_res3', 's3/pathway1_res3']  ['s4/pathway0_res5', 's4/pathway1_res5']
+      # ['s5/pathway0_res2', 's5/pathway1_res2']  ['headclassification/pathway0_avgpool', 'headclassification/pathway1_avgpool']
+  WRONG_PRED_VIS:
+    ENABLE: True
+    SUBSET_PATH: tensorboard/subset.txt
+    TAG: Incorrectly classified videos.
+  CONFUSION_MATRIX:
+    ENABLE: True
+    SUBSET_PATH: tensorboard/subset.txt
+  HISTOGRAM:
+    ENABLE: True
+    SUBSET_PATH: tensorboard/subset.txt
+    TOPK: 5
+DEMO:
+  ENABLE: False
+  LABEL_FILE_PATH: tensorboard/class_name_new.json
+  INPUT_VIDEO:  img/phone_JL_06.mp4  # /home/pe432442/Desktop/some_video.mp4
+  OUTPUT_FILE:  img/out.mp4 # /home/pe432442/Desktop/sf-out
+  # THREAD_ENABLE: True
+  NUM_VIS_INSTANCES: 1
+  NUM_CLIPS_SKIP: 4
+
+# OUTPUT_DIR: result2/timesformerTest/
+OUTPUT_DIR: result2/timesformer/

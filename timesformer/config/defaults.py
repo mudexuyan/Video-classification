@@ -93,7 +93,7 @@ _C.TEST.CHECKPOINT_FILE_PATH = ""
 
 # Number of clips to sample from a video uniformly for aggregating the
 # prediction results.
-_C.TEST.NUM_ENSEMBLE_VIEWS = 10
+_C.TEST.NUM_ENSEMBLE_VIEWS = 1
 
 # Number of crops to sample from a frame spatially for aggregating the
 # prediction results.
@@ -215,7 +215,7 @@ _C.MODEL.NUM_CLASSES = 400
 _C.MODEL.LOSS_FUNC = "cross_entropy"
 
 # Model architectures that has one single pathway.
-_C.MODEL.SINGLE_PATHWAY_ARCH = ["c2d", "i3d", "slow", "x3d"]
+_C.MODEL.SINGLE_PATHWAY_ARCH = ["c2d", "i3d", "slow", "x3d", "vit"]
 
 # Model architectures that has multiple pathways.
 _C.MODEL.MULTI_PATHWAY_ARCH = ["slowfast"]

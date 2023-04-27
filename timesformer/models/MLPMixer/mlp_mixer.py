@@ -132,6 +132,7 @@ class MixerEncoderBase(nn.Module):
         self.T = T
         self.N = N
         self.dim = dim
+        # print(N)
         if self.type == 'space':
             self.norm_s = nn.LayerNorm(N)
             self.expansion_factor_s = 4

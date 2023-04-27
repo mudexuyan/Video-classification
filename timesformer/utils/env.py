@@ -5,7 +5,8 @@
 import timesformer.utils.logging as logging
 
 _ENV_SETUP_DONE = False
-
+# pathmgr = PathManagerFactory.get(key="pyslowfast")
+# checkpoint_pathmgr = PathManagerFactory.get(key="pyslowfast_checkpoint")
 
 def setup_environment():
     global _ENV_SETUP_DONE

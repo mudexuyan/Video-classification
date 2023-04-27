@@ -19,7 +19,7 @@ trainList = []
 testList = []
 valList = []
 
-# 遍历输出每一个文件的名字和类型
+# # 遍历输出每一个文件的名字和类型
 # for file in fileList:
 #     # 是文件则略过
 #     if os.path.isfile(filePath+file):
@@ -33,32 +33,27 @@ valList = []
 #     for subFile in subFileList:
 #         tmp.append(filePath + file + '/' + subFile + ' ' + str(index))
 #     # "\"straight\"": 0,
-#     class_name["\\"+file+"\\"]=index
-#     tmp = []
-#     tmp.append(file)
-#     parent_child[file]=tmp
-#     subset.append(file)
+#     # class_name["\\"+file+"\\"]=index
+#     # t = []
+#     # t.append(file)
+#     # parent_child[file]=t
+#     # subset.append(file)
 #     index = index + 1
 
-#     testTemp = random.sample(tmp, int(0.2*len(tmp)))
-#     train_val = [x for x in tmp if x not in testTemp]
-#     trainTemp = random.sample(train_val, int(0.8*len(train_val)))
-#     valTemp = [x for x in train_val if x not in trainTemp]
+#     testTemp = random.sample(tmp, int(0.3*len(tmp)))
+#     # train_val = [x for x in tmp if x not in testTemp]
+#     trainTemp = [x for x in tmp if x not in testTemp]
+#     valTemp = testTemp
     
 #     trainList.extend(trainTemp)
 #     testList.extend(testTemp)
 #     valList.extend(valTemp)
 
-# print(class_name)
-# print(parent_child)
+# # print(class_name)
+# # print(parent_child)
 
-# print(7172+2216+1836)
-# print(7172/11224)
-# print(1836/11224)
 
-# print(2216/11224)
-
-# print(subset)
+# # print(subset)
 
 # if os.path.exists("../video_dataset/train.csv"):
 #     os.remove("../video_dataset/train.csv")
@@ -85,6 +80,8 @@ valList = []
 #         csvfile.write('\n')
 
 category = []
+count = []
+all = 0
 for file in fileList:
 #     # 是文件则略过
     if os.path.isfile(filePath+file):
@@ -93,7 +90,9 @@ for file in fileList:
     # 输出指定后缀类型的文件
     tmp = []
     subFileList = os.listdir(filePath + file)
+    i=0
     for subFile in subFileList:
+        i = i+1
         tmp.append(filePath + file + '/' + subFile + ' ' + str(index))
     # "\"straight\"": 0,
     class_name["\\"+file+"\\"]=index
@@ -103,15 +102,19 @@ for file in fileList:
     subset.append(file)
     index = index + 1
     category.append(file)
+    count.append(i)
+    all = all+i
 
-    # testTemp = random.sample(tmp, int(0.2*len(tmp)))
-    # train_val = [x for x in tmp if x not in testTemp]
-    # trainTemp = random.sample(train_val, int(0.8*len(train_val)))
-    # valTemp = [x for x in train_val if x not in trainTemp]
+    testTemp = random.sample(tmp, int(0.2*len(tmp)))
+    train_val = [x for x in tmp if x not in testTemp]
+    trainTemp = random.sample(train_val, int(0.8*len(train_val)))
+    valTemp = [x for x in train_val if x not in trainTemp]
     
-    # trainList.extend(trainTemp)
-    # testList.extend(testTemp)
-    # valList.extend(valTemp)
+    trainList.extend(trainTemp)
+    testList.extend(testTemp)
+    valList.extend(valTemp)
 
 print(category)
+print(count)
+print(all)
 print(len(category))

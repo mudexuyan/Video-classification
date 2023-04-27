@@ -4,10 +4,11 @@
 from timesformer.utils.misc import launch_job
 from timesformer.utils.parser import load_config, parse_args
 
-from tools.test_net import test
-from tools.train_net import train
-
-from timesformer.visualization.tensorboard_vis import TensorboardWriter as visualize
+from test_net import test
+from train_net import train
+from visualization import visualize
+from demo_net import demo
+# from timesformer.visualization.tensorboard_vis import TensorboardWriter as visualize
 
 def get_func(cfg):
     train_func = train
@@ -34,12 +35,15 @@ def main():
         launch_job(cfg=cfg, init_method=args.init_method, func=test)
 
     # Perform model visualization.
-    if cfg.TENSORBOARD.ENABLE and (
-        cfg.TENSORBOARD.MODEL_VIS.ENABLE
-        or cfg.TENSORBOARD.WRONG_PRED_VIS.ENABLE
-    ):
-        launch_job(cfg=cfg, init_method=args.init_method, func=visualize)
+        if cfg.TENSORBOARD.ENABLE and (
+            cfg.TENSORBOARD.MODEL_VIS.ENABLE
+            or cfg.TENSORBOARD.WRONG_PRED_VIS.ENABLE
+        ):
+            launch_job(cfg=cfg, init_method=args.init_method, func=visualize)
 
+    # Run demo.
+    if cfg.DEMO.ENABLE:
+        demo(cfg)
 
 if __name__ == "__main__":
     main()

@@ -242,6 +242,8 @@ class GetWeightAndActivation:
         weights = {}
         for layer in self.layers_names:
             cur_layer = get_layer(self.model, layer)
+            print("1",layer)
+            print("2",cur_layer)
             if hasattr(cur_layer, "weight"):
                 weights[layer] = cur_layer.weight.clone().detach()
             else:

@@ -1,8 +1,8 @@
 TRAIN:
   ENABLE: True
   DATASET: kinetics
-  BATCH_SIZE: 8
-  EVAL_PERIOD: 5
+  BATCH_SIZE: 16
+  EVAL_PERIOD: 1
   CHECKPOINT_PERIOD: 5
   AUTO_RESUME: True
 DATA:
@@ -20,7 +20,7 @@ SOLVER:
   LR_POLICY: steps_with_relative_lrs
   STEPS: [0, 11, 14, 30]
   LRS: [1, 0.1, 0.01, 0.06]
-  MAX_EPOCH: 40 #接着训练，在此基础上加上训练的轮数，上一次训练了10次，如果再训练5次，调整为15
+  MAX_EPOCH: 25 #接着训练，在此基础上加上训练的轮数，上一次训练了10次，如果再训练5次，调整为15
   MOMENTUM: 0.9
   WEIGHT_DECAY: 1e-4
   OPTIMIZING_METHOD: sgd
@@ -33,7 +33,7 @@ MODEL:
 TEST:
   ENABLE: True
   DATASET: kinetics
-  BATCH_SIZE: 8
+  BATCH_SIZE: 64
   NUM_ENSEMBLE_VIEWS: 1
   NUM_SPATIAL_CROPS: 3
   # SAVE_RESULTS_PATH: test_result
@@ -41,7 +41,7 @@ DATA_LOADER:
   NUM_WORKERS: 2
   PIN_MEMORY: True
 NUM_GPUS: 2
-NUM_SHARDS: 1
+NUM_SHARDS: 2
 RNG_SEED: 3407
 
 TENSORBOARD:
@@ -64,4 +64,4 @@ TENSORBOARD:
     # Path to txt file contains class names separated by newline characters.
                  # Only classes in this file will be visualized with histograms.
 
-OUTPUT_DIR: result/videoformer6/
+OUTPUT_DIR: result/videoformerT/

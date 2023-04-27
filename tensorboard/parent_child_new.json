@@ -1,25 +1,28 @@
 
 {
-    "normal": [
+    "left-right": [
+        "left",
+        "right"
+    ],
+    "left-right-stright": [
         "left",
         "right",
-        "shift",
-        "straight",
-        "press"
+        "straight"
     ],
-    "drink": [
-        "drink"
-    ],
-    "faint": [
-        "faint"
-    ],
-    "bow": [
-        "bow"
-    ],
-    "phone": [
+    "bow-phone": [
+        "bow",
         "phone"
     ],
-    "talk": [
+    "drink-phone": [
+        "drink",
+        "phone"
+    ],
+    "talk-faint": [
+        "faint",
         "talk"
+    ],
+    "shift-press": [
+        "shift",
+        "press"
     ]
 }

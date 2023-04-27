@@ -153,3 +153,13 @@ Date:   Sun May 8 14:08:25 2022 +0800
 ## 报错 
 1. RuntimeError: Expected to have finished reduction in the prior iteration before starting a new one. This error indicates that your module has parameters that were not used in producing loss. You can enable unused parameter detection by passing the keyword argument `find_unused_parameters=True` to `torch.nn.parallel.DistributedDataParallel`, and by 
 2. 原因: 存在定义的函数未使用
+
+## 
+1. /usr/lib/git-core/git-remote-https: libldap_r-2.4.so.2: no version information available (required by libcurl-gnutls.so.4)
+  /usr/lib/git-core/git-remote-https: liblber-2.4.so.2: no version information available (required by libcurl-gnutls.so.4)
+  /usr/lib/git-core/git-remote-https: /usr/local/MATLAB/MATLAB_Runtime/v910/bin/glnxa64/libldap_r-2.4.so.2: no version information available (required by /lib/x86_64-linux-gnu/libcurl-gnutls.so.4)
+  /usr/lib/git-core/git-remote-https: /usr/local/MATLAB/MATLAB_Runtime/v910/bin/glnxa64/liblber-2.4.so.2: no version information available (required by /lib/x86_64-linux-gnu/libcurl-gnutls.so.4)
+
+2. 定位   ls -l libcurl-gnutls.so.4
+3. 得到值 /lib/x86_64-linux-gnu/
+4. 添加环境变量  export PATH=/lib/x86_64-linux-gnu/:$PATH

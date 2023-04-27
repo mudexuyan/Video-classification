@@ -1,40 +1,42 @@
 TRAIN:
   ENABLE: True
   DATASET: kinetics
-  BATCH_SIZE: 32
-  EVAL_PERIOD: 1
-  CHECKPOINT_PERIOD: 10
+  BATCH_SIZE: 16
+  EVAL_PERIOD: 5
+  CHECKPOINT_PERIOD: 5
   AUTO_RESUME: True
 DATA:
-  PATH_TO_DATA_DIR: ../video_dataset/
+  PATH_TO_DATA_DIR: ../DataSet/
   NUM_FRAMES: 8
   SAMPLING_RATE: 32
   TRAIN_JITTER_SCALES: [256, 320]
   TRAIN_CROP_SIZE: 224
   TEST_CROP_SIZE: 224
   INPUT_CHANNEL_NUM: [3]
-
+TIMESFORMER:
+  ATTENTION_TYPE: 'divided_space_time'
 SOLVER:
-  BASE_LR: 0.05
+  BASE_LR: 0.005
   LR_POLICY: steps_with_relative_lrs
-  STEPS: [0, 18, 25, 50, 60, 80]
-  LRS: [1 ,0.6 ,0.2, 0.01, 0.06, 0.02]
-  MAX_EPOCH: 80 #接着训练，在此基础上加上训练的轮数，上一次训练了10次，如果再训练5次，调整为15
+  STEPS: [0, 11, 14, 30]
+  LRS: [1, 0.1, 0.01, 0.06]
+  MAX_EPOCH: 30 #接着训练，在此基础上加上训练的轮数，上一次训练了10次，如果再训练5次，调整为15
   MOMENTUM: 0.9
   WEIGHT_DECAY: 1e-4
   OPTIMIZING_METHOD: sgd
 MODEL:
-  MODEL_NAME: MLPMixerModel
-  NUM_CLASSES: 94
+  MODEL_NAME: VideoTransformerBase
+  NUM_CLASSES: 10
   ARCH: vit
   LOSS_FUNC: cross_entropy
   DROPOUT_RATE: 0.5
 TEST:
   ENABLE: True
   DATASET: kinetics
-  BATCH_SIZE: 192
+  BATCH_SIZE: 16
   NUM_ENSEMBLE_VIEWS: 1
   NUM_SPATIAL_CROPS: 3
+  # SAVE_RESULTS_PATH: test_result
 DATA_LOADER:
   NUM_WORKERS: 2
   PIN_MEMORY: True
@@ -46,21 +48,20 @@ TENSORBOARD:
   ENABLE: True
   LOG_DIR: tensorboard/log
   # Leave empty to use cfg.OUTPUT_DIR/runs-{cfg.TRAIN.DATASET} as path.
-  CLASS_NAMES_PATH: tensorboard/class_name_last.json
+  CLASS_NAMES_PATH: tensorboard/class_name_new.json
   # Path to json file providing class_name - id mapping.
-  CATEGORIES_PATH: tensorboard/parent_child_last.json
+  CATEGORIES_PATH: tensorboard/parent_child_new.json
   CONFUSION_MATRIX:
     ENABLE: True
-    SUBSET_PATH: tensorboard/subset_last.txt
+    SUBSET_PATH: tensorboard/subset.txt
     # Path to txt file contains class names separated by newline characters.
                  # Only classes in this file will be visualized in the confusion matrix.
   HISTOGRAM:
     ENABLE: True
     TOPK: 5   
     # Top-k most frequently predicted classes for each class in the dataset.
-    SUBSET_PATH: tensorboard/subset_last.txt
+    SUBSET_PATH: tensorboard/subset.txt
     # Path to txt file contains class names separated by newline characters.
                  # Only classes in this file will be visualized with histograms.
 
-
-OUTPUT_DIR: result/mlpEncoder/
+OUTPUT_DIR: result2/videoformer_frame8_rate32/

@@ -372,7 +372,7 @@ class vit_base_patch16_224(nn.Module):
         super(vit_base_patch16_224, self).__init__()
         self.pretrained=True
         patch_size = 16
-        self.model = VisionTransformer(img_size=cfg.DATA.TRAIN_CROP_SIZE, num_classes=cfg.MODEL.NUM_CLASSES, patch_size=patch_size, embed_dim=768, depth=12, num_heads=12, mlp_ratio=4, qkv_bias=True, norm_layer=partial(nn.LayerNorm, eps=1e-6), drop_rate=0., attn_drop_rate=0., drop_path_rate=0.1, num_frames=cfg.DATA.NUM_FRAMES, attention_type=cfg.TIMESFORMER.ATTENTION_TYPE, **kwargs)
+        self.model = VisionTransformer(img_size=cfg.DATA.TRAIN_CROP_SIZE, num_classes=cfg.MODEL.NUM_CLASSES, patch_size=patch_size, embed_dim=768, depth=8, num_heads=12, mlp_ratio=4, qkv_bias=True, norm_layer=partial(nn.LayerNorm, eps=1e-6), drop_rate=0., attn_drop_rate=0., drop_path_rate=0.1, num_frames=cfg.DATA.NUM_FRAMES, attention_type=cfg.TIMESFORMER.ATTENTION_TYPE, **kwargs)
 
         self.attention_type = cfg.TIMESFORMER.ATTENTION_TYPE
         self.model.default_cfg = default_cfgs['vit_base_patch16_224']
@@ -506,7 +506,7 @@ class MLPBlock(nn.Module):
 
 @MODEL_REGISTRY.register()
 class MLPMixerBase(nn.Module):
-    def __init__(self, img_size=224, patch_size=16, in_chans=3, num_classes=1000, embed_dim=768, depth=4,
+    def __init__(self, img_size=224, patch_size=16, in_chans=3, num_classes=1000, embed_dim=768, depth=2,
                  num_heads=12, mlp_ratio=2., mlp_ratio_token=0.5, qkv_bias=False, qk_scale=None, drop_rate=0., attn_drop_rate=0.,
                  drop_path_rate=0.1, hybrid_backbone=None, norm_layer=nn.LayerNorm, num_frames=8, dropout=0.):
         super(MLPMixerBase, self).__init__()
@@ -519,13 +519,13 @@ class MLPMixerBase(nn.Module):
         num_patches = self.patch_embed.num_patches
         chan_first, chan_last = partial(nn.Conv1d, kernel_size = 1), nn.Linear
 
-
+        self.N = int((img_size/patch_size)*(img_size/patch_size))
         ## Attention Blocks
         dpr = [x.item() for x in torch.linspace(0, drop_path_rate, self.depth)]  # stochastic depth decay rule
     
         self.blocks = nn.ModuleList([
-            MLPBlock2(
-                dim=embed_dim, num_heads=num_heads, mlp_ratio=mlp_ratio, qkv_bias=qkv_bias, qk_scale=qk_scale,
+            MLPBlock2( 
+                dim=embed_dim, num_heads=num_heads, mlp_ratio=mlp_ratio, qkv_bias=qkv_bias, qk_scale=qk_scale,num_frames=num_frames,N=self.N,
                 drop=drop_rate, attn_drop=attn_drop_rate, drop_path=dpr[i], norm_layer=norm_layer)
             for i in range(self.depth)])
         self.norm = norm_layer(embed_dim)
@@ -604,6 +604,8 @@ def window_partition(x, window_size: int):
         windows: (num_windows*B, window_size, window_size, C)
     """
     B, H, W, C = x.shape
+    # print(window_size)
+    # print(x.shape)
     x = x.view(B, H // window_size, window_size, W // window_size, window_size, C)
     windows = x.permute(0, 1, 3, 2, 4, 5).contiguous().view(-1, window_size, window_size, C)
     return windows
@@ -653,12 +655,12 @@ class ChannelAttention(nn.Module):
 
 class Encode(nn.Module):
 
-    def __init__(self, dim, num_heads, mlp_ratio=4., qkv_bias=False, qk_scale=None, drop=0., attn_drop=0.,
+    def __init__(self, dim, num_heads, mlp_ratio=4., qkv_bias=False, qk_scale=None, drop=0., attn_drop=0., img_size=224, patch_size=16,
                  drop_path=0.1, act_layer=nn.GELU, norm_layer=nn.LayerNorm, attention_type='divided_space_time'):
         super().__init__()
         self.attention_type = attention_type
         assert(attention_type in ['divided_space_time', 'space_only','joint_space_time'])
-        self.window_size = 7
+        self.window_size = int(img_size/(patch_size*2))
         self.norm1 = norm_layer(dim)
         self.attn = Attention(
            dim, num_heads=num_heads, qkv_bias=qkv_bias, qk_scale=qk_scale, attn_drop=attn_drop, proj_drop=drop)
@@ -746,16 +748,182 @@ class Encode(nn.Module):
             
             ## Mlp
             x = x + torch.cat((cls_token, res), 1)
+       
+
+            x = x + self.drop_path(self.mlp(self.norm2(x)))
+            return x
+
+class EncodeS(nn.Module):
+
+    def __init__(self, dim, num_heads, mlp_ratio=4., qkv_bias=False, qk_scale=None, drop=0., attn_drop=0., img_size=224, patch_size=16,
+                 drop_path=0.1, act_layer=nn.GELU, norm_layer=nn.LayerNorm, attention_type='divided_space_time'):
+        super().__init__()
+        self.attention_type = attention_type
+        assert(attention_type in ['divided_space_time', 'space_only','joint_space_time'])
+        self.window_size = int(img_size/(patch_size*2))
+        self.norm1 = norm_layer(dim)
+        self.attn = Attention(
+           dim, num_heads=num_heads, qkv_bias=qkv_bias, qk_scale=qk_scale, attn_drop=attn_drop, proj_drop=drop)
+        self.channel_attn = ChannelAttention(dim, num_heads=num_heads, qkv_bias=qkv_bias)
+        self.dim = dim
+
+        ## Temporal Attention Parameters
+        if self.attention_type == 'divided_space_time':
+            # self.temporal_norm1 = norm_layer(dim)
+            # self.temporal_attn = Attention(
+            #   dim, num_heads=num_heads, qkv_bias=qkv_bias, qk_scale=qk_scale, attn_drop=attn_drop, proj_drop=drop)
+            # self.temporal_fc = nn.Linear(dim, dim)
+            self.spatial_fc = nn.Linear(dim, dim)
+            # self.concate = nn.Linear(2*dim, dim)
+
+        ## drop path
+        self.drop_path = DropPath(drop_path) if drop_path > 0. else nn.Identity()
+        self.norm2 = norm_layer(dim)
+        mlp_hidden_dim = int(dim * mlp_ratio)
+        self.mlp = Mlp(in_features=dim, hidden_features=mlp_hidden_dim, act_layer=act_layer, drop=drop)
+
+
+    def forward(self, x, B, T, W):
+        num_spatial_tokens = (x.size(1) - 1) // T
+        H = num_spatial_tokens // W
+
+        if self.attention_type in ['space_only', 'joint_space_time']:
+            x = x + self.drop_path(self.attn(self.norm1(x)))
+            x = x + self.drop_path(self.mlp(self.norm2(x)))
+            return x
+        elif self.attention_type == 'divided_space_time':
+            ## Temporal
+            # x= b (1+d*d*t) m
+            # xt = x[:,1:,:]
+            # xt = rearrange(xt, 'b (h w t) m -> (b h w) t m',b=B,h=H,w=W,t=T)
+            # res_temporal = self.drop_path(self.temporal_attn(self.temporal_norm1(xt)))
+            # res_temporal = rearrange(res_temporal, '(b h w) t m -> b (h w t) m',b=B,h=H,w=W,t=T)
+            # res_temporal = self.temporal_fc(res_temporal)
+            # xt = x[:,1:,:] + res_temporal
+
+            ## Spatial
+            ## Temporal atten里的input没有pos_embed
+            ## spatial atten里的input有pos_embed
+            init_cls_token = x[:,0,:].unsqueeze(1)
+            cls_token = init_cls_token.repeat(1, T, 1)
+            cls_token = rearrange(cls_token, 'b t m -> (b t) m',b=B,t=T).unsqueeze(1)
+
+            # xs = xt
+            xs = x[:,1:,:]
+            xs = rearrange(xs, 'b (h w t) m -> (b t) (h w) m',b=B,h=H,w=W,t=T)
+            # xs = torch.cat((cls_token, xs), 1)
+
+            # ***通道注意力机制
+            x_channel = self.drop_path(self.channel_attn(self.norm1(xs)))
+            # ***通道注意力机制
+
+            # ***窗口注意力机制
+            x_windows = rearrange(x_channel, '(b t) (h w) m -> (b t) h w m',b=B,h=H,w=W,t=T)
+            x_windows = window_partition(x_windows, self.window_size)  # (b t n) h/p w/p m
+            x_windows = x_windows.view(-1, self.window_size * self.window_size, self.dim) # (b t n) h/p*w/p m
+            # W-MSA/SW-MSA
+            attn_windows = self.drop_path(self.attn(self.norm1(x_windows)))
+            # merge windows
+            attn_windows = attn_windows.view(-1,
+                                         self.window_size,
+                                         self.window_size,
+                                         self.dim)
+            xw = window_reverse(attn_windows, self.window_size, H, W) #  (b t) h w m
+            # ***窗口注意力机制
+            res_spatial = rearrange(xw, '(b t) h w m -> (b t) (h w) m',b=B,h=H,w=W,t=T)
+
+            # res_spatial = self.drop_path(self.attn(self.norm1(xs)))
+            ### Taking care of CLS token
+            cls_token = res_spatial[:,0,:]
+            cls_token = rearrange(cls_token, '(b t) m -> b t m',b=B,t=T)
+            cls_token = torch.mean(cls_token,1,True) ## averaging for every frame
+
+            # res_spatial = res_spatial[:,1:,:]
+            res_spatial = rearrange(res_spatial, '(b t) (h w) m -> b (h w t) m',b=B,h=H,w=W,t=T)
+            res_spatial = self.spatial_fc(res_spatial)
+            
+            # fuse
+            # res = torch.cat([res_spatial, res_temporal], dim=2) # b (h w t) m*2
+            # res = self.concate(res) # b (h w t) m
+            
+            ## Mlp
+            x = x + torch.cat((cls_token, res_spatial), 1)
+       
+
+            x = x + self.drop_path(self.mlp(self.norm2(x)))
+            return x
+
+class EncodeT(nn.Module):
+
+    def __init__(self, dim, num_heads, mlp_ratio=4., qkv_bias=False, qk_scale=None, drop=0., attn_drop=0., img_size=224, patch_size=16,
+                 drop_path=0.1, act_layer=nn.GELU, norm_layer=nn.LayerNorm, attention_type='divided_space_time'):
+        super().__init__()
+        self.attention_type = attention_type
+        assert(attention_type in ['divided_space_time', 'space_only','joint_space_time'])
+        self.window_size = int(img_size/(patch_size*2))
+        # self.norm1 = norm_layer(dim)
+        # self.attn = Attention(
+        #    dim, num_heads=num_heads, qkv_bias=qkv_bias, qk_scale=qk_scale, attn_drop=attn_drop, proj_drop=drop)
+        # self.channel_attn = ChannelAttention(dim, num_heads=num_heads, qkv_bias=qkv_bias)
+        self.dim = dim
+
+        ## Temporal Attention Parameters
+        if self.attention_type == 'divided_space_time':
+            self.temporal_norm1 = norm_layer(dim)
+            self.temporal_attn = Attention(
+              dim, num_heads=num_heads, qkv_bias=qkv_bias, qk_scale=qk_scale, attn_drop=attn_drop, proj_drop=drop)
+            self.temporal_fc = nn.Linear(dim, dim)
+            # self.spatial_fc = nn.Linear(dim, dim)
+            # self.concate = nn.Linear(2*dim, dim)
+
+        ## drop path
+        self.drop_path = DropPath(drop_path) if drop_path > 0. else nn.Identity()
+        self.norm2 = norm_layer(dim)
+        mlp_hidden_dim = int(dim * mlp_ratio)
+        self.mlp = Mlp(in_features=dim, hidden_features=mlp_hidden_dim, act_layer=act_layer, drop=drop)
+
+
+    def forward(self, x, B, T, W):
+        num_spatial_tokens = (x.size(1) - 1) // T
+        H = num_spatial_tokens // W
+
+        if self.attention_type in ['space_only', 'joint_space_time']:
+            # x = x + self.drop_path(self.attn(self.norm1(x)))
+            # x = x + self.drop_path(self.mlp(self.norm2(x)))
+            return x
+        elif self.attention_type == 'divided_space_time':
+            ## Temporal
+            # x= b (1+d*d*t) m
+            xt = x[:,1:,:]
+            xt = rearrange(xt, 'b (h w t) m -> (b h w) t m',b=B,h=H,w=W,t=T)
+            res_temporal = self.drop_path(self.temporal_attn(self.temporal_norm1(xt)))
+            res_temporal = rearrange(res_temporal, '(b h w) t m -> b (h w t) m',b=B,h=H,w=W,t=T)
+            res_temporal = self.temporal_fc(res_temporal)
+            # xt = x[:,1:,:] + res_temporal
+
+            ## Spatial
+            ## Temporal atten里的input没有pos_embed
+            ## spatial atten里的input有pos_embed
+            init_cls_token = x[:,0,:].unsqueeze(1)
+            # cls_token = init_cls_token.repeat(1, T, 1)
+            # cls_token = rearrange(cls_token, 'b t m -> (b t) m',b=B,t=T).unsqueeze(1)
+
+        
+            ## Mlp
+            x = x + torch.cat((init_cls_token, res_temporal), 1)
+       
+
             x = x + self.drop_path(self.mlp(self.norm2(x)))
             return x
 
 class VideoTransformer(nn.Module):
-    """ Vision Transformere
+    """ Video Transformere
     """
     def __init__(self, img_size=224, patch_size=16, in_chans=3, num_classes=1000, embed_dim=768, depth=8,
                  num_heads=12, mlp_ratio=4., qkv_bias=False, qk_scale=None, drop_rate=0., attn_drop_rate=0.,
                  drop_path_rate=0.1, hybrid_backbone=None, norm_layer=nn.LayerNorm, num_frames=8, attention_type='divided_space_time', dropout=0.):
         super().__init__()
+       
         self.attention_type = attention_type
         self.depth = depth
         self.dropout = nn.Dropout(dropout)
@@ -776,7 +944,7 @@ class VideoTransformer(nn.Module):
         ## Attention Blocks
         dpr = [x.item() for x in torch.linspace(0, drop_path_rate, self.depth)]  # stochastic depth decay rule
         self.blocks = nn.ModuleList([
-            Encode(
+            EncodeT( img_size=img_size, patch_size=patch_size,
                 dim=embed_dim, num_heads=num_heads, mlp_ratio=mlp_ratio, qkv_bias=qkv_bias, qk_scale=qk_scale,
                 drop=drop_rate, attn_drop=attn_drop_rate, drop_path=dpr[i], norm_layer=norm_layer, attention_type=self.attention_type)
             for i in range(self.depth)])
@@ -877,6 +1045,7 @@ class VideoTransformer(nn.Module):
         return x
 
     def forward(self, x):
+        
         x = self.forward_features(x)
         x = self.head(x)
         return x
@@ -898,7 +1067,7 @@ class VideoTransformerBase(nn.Module):
         super(VideoTransformerBase, self).__init__()
         self.pretrained=True
         patch_size = 16
-        self.model = VideoTransformer(img_size=cfg.DATA.TRAIN_CROP_SIZE, num_classes=cfg.MODEL.NUM_CLASSES, patch_size=patch_size, embed_dim=768, depth=6, num_heads=12, mlp_ratio=4, qkv_bias=True, norm_layer=partial(nn.LayerNorm, eps=1e-6), drop_rate=0., attn_drop_rate=0., drop_path_rate=0.1, num_frames=cfg.DATA.NUM_FRAMES, attention_type=cfg.TIMESFORMER.ATTENTION_TYPE, **kwargs)
+        self.model = VideoTransformer(img_size=cfg.DATA.TRAIN_CROP_SIZE, num_classes=cfg.MODEL.NUM_CLASSES, patch_size=patch_size, embed_dim=768, depth=8, num_heads=12, mlp_ratio=4, qkv_bias=True, norm_layer=partial(nn.LayerNorm, eps=1e-6), drop_rate=0., attn_drop_rate=0., drop_path_rate=0.1, num_frames=cfg.DATA.NUM_FRAMES, attention_type=cfg.TIMESFORMER.ATTENTION_TYPE, **kwargs)
 
         self.attention_type = cfg.TIMESFORMER.ATTENTION_TYPE
         self.model.default_cfg = default_cfgs['vit_base_patch16_224']
@@ -916,7 +1085,7 @@ class VideoTransformerModel(nn.Module):
     def __init__(self, img_size=224, patch_size=16, num_classes=400, num_frames=8, attention_type='divided_space_time',  pretrained_model='', **kwargs):
         super(VideoTransformerModel, self).__init__()
         self.pretrained=True
-        self.model = VideoTransformer(img_size=img_size, num_classes=num_classes, patch_size=patch_size, embed_dim=768, depth=8, num_heads=12, mlp_ratio=4, qkv_bias=True, norm_layer=partial(nn.LayerNorm, eps=1e-6), drop_rate=0., attn_drop_rate=0., drop_path_rate=0.1, num_frames=num_frames, attention_type=attention_type, **kwargs)
+        self.model = VideoTransformer(img_size=img_size, num_classes=num_classes, patch_size=patch_size, embed_dim=768, depth=10, num_heads=12, mlp_ratio=4, qkv_bias=True, norm_layer=partial(nn.LayerNorm, eps=1e-6), drop_rate=0., attn_drop_rate=0., drop_path_rate=0.1, num_frames=num_frames, attention_type=attention_type, **kwargs)
 
         self.attention_type = attention_type
         self.model.default_cfg = default_cfgs['vit_base_patch'+str(patch_size)+'_224']
@@ -931,7 +1100,7 @@ class VideoTransformerModel(nn.Module):
 
 class MLPBlock2(nn.Module):
 
-    def __init__(self, dim, num_heads, mlp_ratio=4., qkv_bias=False, qk_scale=None, drop=0., attn_drop=0.,
+    def __init__(self, dim, num_heads, mlp_ratio=4., qkv_bias=False, qk_scale=None, drop=0., attn_drop=0., num_frames=8, N=196,
                  drop_path=0.1, act_layer=nn.GELU, norm_layer=nn.LayerNorm):
         super().__init__()
 
@@ -941,8 +1110,8 @@ class MLPBlock2(nn.Module):
         self.dim=dim
         self.window_size = 7
         self.num_patches_t = 4
-        self.T = 8
-        self.N = 196
+        self.T = num_frames # 8
+        self.N = N    # 196
         mlp_hidden_dim = int(dim * mlp_ratio)
         # self.mlp = Mlp(in_features=dim, hidden_features=mlp_hidden_dim, act_layer=act_layer, drop=drop)
         # self.mpl_s = MLPMixer(

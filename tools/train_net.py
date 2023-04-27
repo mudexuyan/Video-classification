@@ -205,7 +205,8 @@ def eval_epoch(val_loader, model, val_meter, cur_epoch, cfg, writer=None):
     # Evaluation mode enabled. The running stats would not be updated.
     model.eval()
     val_meter.iter_tic()
-
+    top1_num = 0
+    top5_num = 0
     for cur_iter, (inputs, labels, _, meta) in enumerate(val_loader):
         if cfg.NUM_GPUS:
             # Transferthe data to the current GPU device.
@@ -253,6 +254,9 @@ def eval_epoch(val_loader, model, val_meter, cur_epoch, cfg, writer=None):
                 # Compute the errors.
                 num_topks_correct = metrics.topks_correct(preds, labels, (1, 5))
 
+                # 预测正确的个数
+                top1_num = top1_num + num_topks_correct[0]
+                top5_num = top5_num + num_topks_correct[1]
                 # Combine the errors across the GPUs.
                 top1_err, top5_err = [
                     (1.0 - x / preds.size(0)) * 100.0 for x in num_topks_correct
@@ -294,6 +298,11 @@ def eval_epoch(val_loader, model, val_meter, cur_epoch, cfg, writer=None):
                 {"Val/mAP": val_meter.full_map}, global_step=cur_epoch
             )
         else:
+            writer.add_scalars(
+                {"Test/Top1_acc": (0.0+top1_num/1666) * 100.0, "Test/Top5_acc": (0.0+top5_num/1666) * 100.0 },
+                global_step= cur_epoch+1
+            )
+
             all_preds = [pred.clone().detach() for pred in val_meter.all_preds]
             all_labels = [
                 label.clone().detach() for label in val_meter.all_labels

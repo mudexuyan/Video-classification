@@ -1,0 +1,92 @@
+TRAIN:
+  ENABLE: False
+  DATASET: kinetics
+  BATCH_SIZE: 16
+  EVAL_PERIOD: 5
+  CHECKPOINT_PERIOD: 5
+  AUTO_RESUME: True
+DATA:
+  PATH_TO_DATA_DIR: ../TestData/
+  NUM_FRAMES: 8
+  SAMPLING_RATE: 24
+  TRAIN_JITTER_SCALES: [256, 320]
+  TRAIN_CROP_SIZE: 224
+  TEST_CROP_SIZE: 256
+  INPUT_CHANNEL_NUM: [3]
+RESNET:
+  ZERO_INIT_FINAL_BN: True
+  WIDTH_PER_GROUP: 64
+  NUM_GROUPS: 1
+  DEPTH: 50
+  TRANS_FUNC: bottleneck_transform
+  STRIDE_1X1: False
+  NUM_BLOCK_TEMP_KERNEL: [[3], [4], [6], [3]]
+NONLOCAL:
+  LOCATION: [[[]], [[]], [[]], [[]]]
+  GROUP: [[1], [1], [1], [1]]
+  INSTANTIATION: softmax
+BN:
+  USE_PRECISE_STATS: True
+  NUM_BATCHES_PRECISE: 200
+SOLVER:
+  BASE_LR: 0.1
+  LR_POLICY: cosine
+  MAX_EPOCH: 100
+  MOMENTUM: 0.9
+  WEIGHT_DECAY: 1e-4
+  WARMUP_EPOCHS: 34.0
+  WARMUP_START_LR: 0.01
+  OPTIMIZING_METHOD: sgd
+MODEL:
+  NUM_CLASSES: 94
+  ARCH: c2d
+  MODEL_NAME: ResNet
+  LOSS_FUNC: cross_entropy
+  DROPOUT_RATE: 0.5
+TEST:
+  ENABLE: True
+  DATASET: kinetics
+  BATCH_SIZE: 16
+  NUM_ENSEMBLE_VIEWS: 1
+  NUM_SPATIAL_CROPS: 1
+  CHECKPOINT_FILE_PATH: ./result/C2D/checkpoints/checkpoint_epoch_00100.pyth
+
+DATA_LOADER:
+  NUM_WORKERS: 2
+  PIN_MEMORY: True
+NUM_GPUS: 2
+NUM_SHARDS: 1
+RNG_SEED: 3407
+TENSORBOARD:
+  ENABLE: True
+  CLASS_NAMES_PATH: tensorboard/class_name_last.json
+  CATEGORIES_PATH: tensorboard/parent_child_last.json
+  MODEL_VIS:
+    ENABLE: True
+    MODEL_WEIGHTS: True # Set to True to visualize model weights.
+    ACTIVATIONS: True # Set to True to visualize feature maps.
+    INPUT_VIDEO: True
+    # Set to True to visualize the input video(s) for the corresponding feature maps.
+    LAYER_LIST: ['headclassification/pathway0_avgpool'] # List of layer names to visualize weights and activations for.['s5/pathway1_res2', 's5/pathway0_res2'] \['model/blocks/11','model/blocks/11']
+    GRAD_CAM:
+      ENABLE: True
+      LAYER_LIST: ['headclassification/pathway0_avgpool']
+      # List of CNN layers to use for Grad-CAM visualization method.
+                  # The number of layer must be equal to the number of pathway(s).
+      # ['s1/pathway0_stem', 's1/pathway1_stem']  ['s2/pathway0_res2', 's2/pathway1_res2']   
+      # ['s3/pathway0_res3', 's3/pathway1_res3']  ['s4/pathway0_res5', 's4/pathway1_res5']
+      # ['s5/pathway0_res2', 's5/pathway1_res2']  ['headclassification/pathway0_avgpool', 'headclassification/pathway1_avgpool']
+  WRONG_PRED_VIS:
+    ENABLE: True
+    SUBSET_PATH: tensorboard/subset.txt
+    TAG: Incorrectly classified videos.
+  CONFUSION_MATRIX:
+    ENABLE: True
+    FIGSIZE: [8, 8]
+    SUBSET_PATH: tensorboard/subset.txt
+  HISTOGRAM:
+    ENABLE: True
+    FIGSIZE: [8, 8]
+    SUBSET_PATH: tensorboard/subset.txt
+    TOPK: 5
+OUTPUT_DIR: result2/c2d/
